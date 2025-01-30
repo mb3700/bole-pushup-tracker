@@ -84,7 +84,7 @@ export function registerRoutes(app: Express): Server {
         const { spawn } = await import('child_process');
         const ffmpeg = spawn('ffmpeg', [
           '-i', req.file.path,
-          '-vf', 'transpose=2,scale=640:-2',
+          '-vf', 'scale=640:-2',
           '-c:v', 'libx264',
           '-preset', 'ultrafast',
           '-movflags', '+faststart',
