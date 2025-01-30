@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Video, Upload, Loader2 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 export function FormCheck() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -111,7 +112,9 @@ export function FormCheck() {
           {feedback && (
             <div className="w-full p-4 bg-muted rounded-lg">
               <h3 className="font-semibold mb-2">AI Form Analysis</h3>
-              <p className="text-sm whitespace-pre-line">{feedback}</p>
+              <div className="text-sm prose prose-sm dark:prose-invert max-w-none">
+                <ReactMarkdown>{feedback}</ReactMarkdown>
+              </div>
             </div>
           )}
         </div>
