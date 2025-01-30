@@ -78,9 +78,32 @@ export function registerRoutes(app: Express): Server {
       const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
       const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
-      // Read the video file
-      const videoData = await fs.promises.readFile(req.file.path);
+      // Compress video using ffmpeg
+      const compressedPath = `${req.file.path}_compressed.mp4`;
+      await new Promise((resolve, reject) => {
+        const ffmpeg = require('child_process').spawn('ffmpeg', [
+          '-i', req.file.path,
+          '-vf', 'scale=640:-1',  // Resize to 640p width, maintain aspect ratio
+          '-c:v', 'libx264',      // Use H.264 codec
+          '-crf', '28',           // Compression quality (23-28 is good)
+          '-preset', 'faster',    // Encoding speed preset
+          '-y',                   // Overwrite output file if exists
+          compressedPath
+        ]);
+
+        ffmpeg.on('close', (code) => {
+          if (code === 0) resolve();
+          else reject(new Error('Failed to compress video'));
+        });
+      });
+
+      // Read the compressed video
+      const videoData = await fs.promises.readFile(compressedPath);
       const base64Video = videoData.toString('base64');
+
+      // Clean up original and compressed videos
+      fs.unlinkSync(req.file.path);
+      fs.unlinkSync(compressedPath);
 
       // Generate prompt for video analysis
       const prompt = `
