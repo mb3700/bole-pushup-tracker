@@ -80,7 +80,7 @@ export function registerRoutes(app: Express): Server {
 
       // Compress video using ffmpeg
       const compressedPath = `${req.file.path}_compressed.mp4`;
-      await new Promise((resolve, reject) => {
+      await new Promise(async (resolve, reject) => {
         const { spawn } = await import('child_process');
         const ffmpeg = spawn('ffmpeg', [
           '-i', req.file.path,
