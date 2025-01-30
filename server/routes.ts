@@ -102,8 +102,7 @@ export function registerRoutes(app: Express): Server {
       const videoData = await fs.promises.readFile(compressedPath);
       const base64Video = videoData.toString('base64');
 
-      // Clean up original and compressed videos
-      fs.unlinkSync(req.file.path);
+      // Clean up compressed video
       fs.unlinkSync(compressedPath);
 
       // Generate prompt for video analysis
