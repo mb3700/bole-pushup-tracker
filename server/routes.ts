@@ -4,6 +4,7 @@ import { db } from "@db";
 import { pushups } from "@db/schema";
 import { eq } from "drizzle-orm";
 import multer from "multer";
+import path from "path";
 import fs from "fs";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
@@ -77,19 +78,8 @@ export function registerRoutes(app: Express): Server {
       const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
       const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
-      // Read and compress video using FFmpeg CLI
-      const compressedPath = `${req.file.path}_compressed.mp4`;
-      const { exec } = require('child_process');
-      const { promisify } = require('util');
-      const execAsync = promisify(exec);
-      
-      await execAsync(`ffmpeg -i ${req.file.path} -vf scale=640:-2 -b:v 800k ${compressedPath}`);
-
-      // Read compressed video
-      const videoData = await fs.promises.readFile(compressedPath);
-
-      // Clean up compressed file
-      fs.unlinkSync(compressedPath);
+      // Read the video file
+      const videoData = await fs.promises.readFile(req.file.path);
 
       // Generate prompt for video analysis
       const prompt = `

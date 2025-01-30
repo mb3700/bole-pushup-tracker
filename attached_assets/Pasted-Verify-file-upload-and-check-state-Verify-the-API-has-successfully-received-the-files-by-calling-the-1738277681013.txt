@@ -1,0 +1,68 @@
+Verify file upload and check state
+Verify the API has successfully received the files by calling the files.get method.
+
+Note: Video files have a State field in the File API. When a video is uploaded, it will be in the PROCESSING state until it is ready for inference. Only ACTIVE files can be used for model inference.
+
+import time
+
+# Check whether the file is ready to be used.
+while video_file.state.name == "PROCESSING":
+    print('.', end='')
+    time.sleep(10)
+    video_file = genai.get_file(video_file.name)
+
+if video_file.state.name == "FAILED":
+  raise ValueError(video_file.state.name)
+
+Prompt with a video and text
+Once the uploaded video is in the ACTIVE state, you can make GenerateContent requests that specify the File API URI for that video. Select the generative model and provide it with the uploaded video and a text prompt.
+
+
+# Create the prompt.
+prompt = "Summarize this video. Then create a quiz with answer key based on the information in the video."
+
+# Choose a Gemini model.
+model = genai.GenerativeModel(model_name="gemini-1.5-pro")
+
+# Make the LLM request.
+print("Making LLM inference request...")
+response = model.generate_content([video_file, prompt],
+                                  request_options={"timeout": 600})
+
+# Print the response, rendering any Markdown
+Markdown(response.text)
+Refer to timestamps in the content
+You can use timestamps of the form HH:MM:SS to refer to specific moments in the video.
+
+
+# Create the prompt.
+prompt = "What are the examples given at 01:05 and 01:19 supposed to show us?"
+
+# Choose a Gemini model.
+model = genai.GenerativeModel(model_name="gemini-1.5-pro")
+
+# Make the LLM request.
+print("Making LLM inference request...")
+response = model.generate_content([video_file, prompt],
+                                  request_options={"timeout": 600})
+print(response.text)
+Transcribe video and provide visual descriptions
+The Gemini models can transcribe and provide visual descriptions of video content by processing both the audio track and visual frames. For visual descriptions, the model samples the video at a rate of 1 frame per second. This sampling rate may affect the level of detail in the descriptions, particularly for videos with rapidly changing visuals.
+
+
+# Create the prompt.
+prompt = "Transcribe the audio from this video, giving timestamps for salient events in the video. Also provide visual descriptions."
+
+# Choose a Gemini model.
+model = genai.GenerativeModel(model_name="gemini-1.5-pro")
+
+# Make the LLM request.
+print("Making LLM inference request...")
+response = model.generate_content([video_file, prompt],
+                                  request_options={"timeout": 600})
+print(response.text)
+List files
+You can list all files uploaded using the File API and their URIs using files.list.
+
+
+import google.generativeai as genai
