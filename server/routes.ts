@@ -76,10 +76,11 @@ export function registerRoutes(app: Express): Server {
 
       // Initialize Gemini AI
       const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+      const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
 
       // Read the video file
       const videoData = await fs.promises.readFile(req.file.path);
+      const base64Video = videoData.toString('base64');
 
       // Generate prompt for video analysis
       const prompt = `
@@ -91,7 +92,18 @@ export function registerRoutes(app: Express): Server {
       `;
 
       // Analyze the video
-      const result = await model.generateContent([prompt, videoData]);
+      const result = await model.generateContent({
+        contents: [{
+          parts: [{
+            text: prompt
+          }, {
+            inlineData: {
+              mimeType: req.file.mimetype,
+              data: base64Video
+            }
+          }]
+        }]
+      });
       const response = await result.response.text();
 
       // Clean up uploaded file
