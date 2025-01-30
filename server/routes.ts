@@ -81,7 +81,8 @@ export function registerRoutes(app: Express): Server {
       // Compress video using ffmpeg
       const compressedPath = `${req.file.path}_compressed.mp4`;
       await new Promise((resolve, reject) => {
-        const ffmpeg = require('child_process').spawn('ffmpeg', [
+        const { spawn } = await import('child_process');
+        const ffmpeg = spawn('ffmpeg', [
           '-i', req.file.path,
           '-vf', 'scale=640:-1',  // Resize to 640p width, maintain aspect ratio
           '-c:v', 'libx264',      // Use H.264 codec
