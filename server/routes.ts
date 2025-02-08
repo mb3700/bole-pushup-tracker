@@ -140,14 +140,30 @@ export function registerRoutes(app: Express): Server {
 
       // Generate prompt for video analysis
       const prompt = `
-        Watch the ENTIRE video carefully before providing analysis. Do not make assumptions based on the starting position:
-        1. Note ALL position changes throughout the COMPLETE set
-        2. If the exercise starts in one position (e.g. knees) and changes to another (e.g. standard), explicitly state this
-        3. DO NOT assume the starting position is maintained throughout
-        4. Analyze form for EACH phase of the exercise separately
-        5. List specific improvements needed for the ACTUAL form used
-        6. Only mention safety concerns relevant to the forms ACTUALLY demonstrated
-        Watch the full video (minimum 15 seconds) before responding.
+        Watch the COMPLETE video before providing analysis. Focus on specific technique details:
+
+        1. Initial Setup & Transitions:
+           - Note precise starting position
+           - Document ANY form changes or transitions
+           - Timing of transitions
+
+        2. Technical Analysis for EACH Phase:
+           - Elbow positioning (angle relative to body)
+           - Body alignment (head, shoulders, hips, feet)
+           - Movement speed and control
+           - Depth of movement
+           - Core engagement
+
+        3. Improvements:
+           - Prioritize key form corrections
+           - Suggest specific adjustments for each issue
+           - Focus on technique over quantity
+
+        4. Safety:
+           - Note joint positions and stress points
+           - Identify any compensation patterns
+
+        Watch minimum 15-20 seconds. Be specific about observed form rather than assumptions.
       `;
 
       // Analyze the video
