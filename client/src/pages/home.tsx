@@ -96,7 +96,7 @@ export default function Home() {
       return sortedPushups.reduce((acc, entry) => {
         const dateKey = format(new Date(entry.date), "MM/dd");
         const existingDay = acc.find(item => item.date === dateKey);
-        
+
         if (existingDay) {
           existingDay.count += entry.count;
         } else {
@@ -137,12 +137,17 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50/50">
-      <div className="relative h-48 sm:h-64 w-full mb-8">
-        <img 
-          src="/images/bitmoji.jpeg" 
-          alt="Bitmoji Hero"
-          className="absolute inset-0 w-full h-full object-contain"
-        />
+      <div className="relative h-48 sm:h-64 w-full mb-8 overflow-hidden hero-banner">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/30 to-cyan-500/30 animate-gradient"></div>
+        <div className="absolute inset-0 backdrop-blur-sm"></div>
+        <div className="absolute inset-0 bg-white/10"></div>
+        <div className="absolute inset-0 flex justify-center items-center">
+          <img 
+            src="/images/bitmoji.jpeg" 
+            alt="Bitmoji Hero"
+            className="h-full w-auto max-w-none object-cover z-10"
+          />
+        </div>
       </div>
       <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8 max-w-7xl">
         <header className="text-center space-y-3 mb-10">
@@ -159,7 +164,7 @@ export default function Home() {
                 "Progress is progress, no matter how small"
               ];
               const [index, setIndex] = useState(0);
-              
+
               useEffect(() => {
                 const timer = setInterval(() => {
                   setIndex(i => (i + 1) % phrases.length);
