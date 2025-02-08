@@ -165,6 +165,11 @@ export default function Home() {
         count,
         date: data.date || format(new Date(), "yyyy-MM-dd")
       });
+      await refetch();
+      form.reset({
+        count: 0,
+        date: format(new Date(), "yyyy-MM-dd")
+      });
     } else {
       toast({ 
         title: "Invalid input", 
