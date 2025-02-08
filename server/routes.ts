@@ -89,13 +89,22 @@ export function registerRoutes(app: Express): Server {
 
         const apiKey = process.env.GEMINI_API_KEY;
         const isDeployment = process.env.REPLIT_DEPLOYMENT === "1";
-        console.log("Full environment check:", {
+        console.log("Deployment Environment Check:", {
           hasGeminiKey: !!process.env.GEMINI_API_KEY,
-          environment: process.env.NODE_ENV,
-          keyPrefix: apiKey?.substring(0, 4) || 'none',
+          keyLength: apiKey?.length || 0,
           isDeployment,
-          deploymentMode: process.env.DEPLOYMENT || 'not set'
+          environment: process.env.NODE_ENV,
+          replit_slug: process.env.REPL_SLUG || 'not set',
+          replit_owner: process.env.REPL_OWNER || 'not set',
+          deployment_id: process.env.DEPLOYMENT_ID || 'not set'
         });
+        
+        if (!apiKey && isDeployment) {
+          return res.status(500).json({ 
+            message: "Gemini API key not configured in deployment environment - please check environment variables",
+            isDeployment
+          });
+        }
         if (!apiKey) {
           console.error("Missing GEMINI_API_KEY environment variable");
           return res
