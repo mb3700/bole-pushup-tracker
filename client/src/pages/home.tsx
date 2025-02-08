@@ -161,10 +161,13 @@ export default function Home() {
     const count = parseInt(data.count.toString(), 10);
     if (!isNaN(count) && count > 0) {
       console.log("Submitting pushup entry:", { count, date: data.date });
-      await addEntry.mutateAsync({ 
+      const submission = {
         count,
         date: data.date || format(new Date(), "yyyy-MM-dd")
-      });
+      };
+      console.log("Submitting:", submission);
+      const result = await addEntry.mutateAsync(submission);
+      console.log("Server response:", result);
       await refetch();
       form.reset({
         count: 0,
