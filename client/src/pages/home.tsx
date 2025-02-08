@@ -149,12 +149,12 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50/50">
       <div className="relative h-64 w-full mb-8 overflow-hidden hero-banner">
         <img 
-          src="/images/celebration.png"
-          alt="Celebration Hero" 
+          src="/images/bitmoji-transparent.png"
+          alt="Bitmoji Hero" 
           className="absolute right-1/2 transform translate-x-1/2 h-full w-auto object-contain z-10"
         />
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-0 bg-[#000000]/10"></div>
+          <div className="absolute inset-0"></div>
         </div>
       </div>
       <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8 max-w-7xl">
