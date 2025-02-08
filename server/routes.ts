@@ -88,10 +88,12 @@ export function registerRoutes(app: Express): Server {
         }
 
         const apiKey = process.env.GEMINI_API_KEY;
-        console.log("Environment check:", {
+        console.log("Full environment check:", {
           hasGeminiKey: !!process.env.GEMINI_API_KEY,
           environment: process.env.NODE_ENV,
-          keyPrefix: apiKey?.substring(0, 4) || 'none'
+          keyPrefix: apiKey?.substring(0, 4) || 'none',
+          allEnvKeys: Object.keys(process.env),
+          deploymentMode: process.env.DEPLOYMENT || 'not set'
         });
         if (!apiKey) {
           console.error("Missing GEMINI_API_KEY environment variable");
