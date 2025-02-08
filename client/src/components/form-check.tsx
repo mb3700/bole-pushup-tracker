@@ -8,6 +8,7 @@ import ReactMarkdown from "react-markdown";
 export function FormCheck() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleVideoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -34,6 +35,8 @@ export function FormCheck() {
       return;
     }
 
+    const videoUrl = URL.createObjectURL(file);
+    setVideoPreview(videoUrl);
     setIsAnalyzing(true);
     setFeedback(null);
 
@@ -101,6 +104,18 @@ export function FormCheck() {
               disabled={isAnalyzing}
             />
           </label>
+
+          {videoPreview && (
+            <div className="w-full max-w-lg mx-auto mt-4">
+              <video 
+                src={videoPreview} 
+                controls 
+                className="w-full rounded-lg shadow-lg"
+              >
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          )}
 
           {isAnalyzing && (
             <div className="flex items-center space-x-2 text-sm text-muted-foreground">
