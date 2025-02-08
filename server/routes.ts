@@ -32,6 +32,7 @@ export function registerRoutes(app: Express): Server {
   app.get("/api/pushups", async (req, res) => {
     try {
       const entries = await db.select().from(pushups);
+      console.log("Database entries:", entries);
       res.json(entries);
     } catch (error) {
       console.error("Error fetching pushups:", error);
