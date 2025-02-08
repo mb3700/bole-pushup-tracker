@@ -45,13 +45,13 @@ export function registerRoutes(app: Express): Server {
     try {
       const { count, date } = req.body;
       console.log("Received pushup data:", { count, date });
-
+      
       if (!count || isNaN(count)) {
         return res.status(400).json({ message: "Invalid count value" });
       }
 
       console.log("Attempting database insert...");
-
+      
       // Verify pushups table exists
       const tables = await db.query.pushups.findMany();
       console.log("Current pushups table state:", tables);
@@ -82,104 +82,90 @@ export function registerRoutes(app: Express): Server {
   // Form check endpoint
   app.post("/api/form-check", upload.single("video"), async (req, res) => {
     try {
-      console.log("Processing video upload request");
-
       if (!req.file) {
-        console.error("No video file uploaded");
-        return res.status(400).json({ success: false, error: "No video file uploaded" });
+        return res.status(400).json({ message: "No video file uploaded" });
       }
 
-      console.log("Video file received:", req.file.path);
-
       if (!process.env.GEMINI_API_KEY) {
-        console.error("Gemini API key missing");
-        return res.status(500).json({ success: false, error: "AI service not configured" });
+        return res
+          .status(500)
+          .json({ message: "Gemini API key not configured" });
       }
 
       // Initialize Gemini AI
       const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      console.log("Initializing Gemini model");
-      const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
-      // Extract frame from video for analysis
-      const framePath = `${req.file.path}_frame.jpg`;
-      console.log("Extracting frame from video:", framePath);
+      // Compress video using ffmpeg
+      const compressedPath = `${req.file.path}_compressed.mp4`;
+      await new Promise(async (resolve, reject) => {
+        const { spawn } = await import('child_process');
+        const ffmpeg = spawn('ffmpeg', [
+          '-i', req.file.path,
+          '-vf', 'scale=480:-2',
+          '-c:v', 'libx264',
+          '-crf', '28',
+          '-preset', 'veryfast',
+          '-movflags', '+faststart',
+          '-pix_fmt', 'yuv420p',
+          '-t', '30',
+          '-y',
+          compressedPath
+        ]);
 
-      try {
-        await new Promise((resolve, reject) => {
-          const { spawn } = require('child_process');
-          const ffmpeg = spawn('ffmpeg', [
-            '-i', req.file.path,
-            '-vf', 'fps=1',
-            '-frames:v', '1',
-            '-y',
-            framePath
-          ]);
-
-          ffmpeg.stderr.on('data', (data) => {
-            console.log('FFmpeg output:', data.toString());
-          });
-
-          ffmpeg.on('close', (code) => {
-            if (code === 0) resolve();
-            else reject(new Error(`FFmpeg failed with code ${code}`));
-          });
+        let errorOutput = '';
+        ffmpeg.stderr.on('data', (data) => {
+          errorOutput += data.toString();
         });
 
-        // Read the frame and convert to base64
-        const frameData = await fs.promises.readFile(framePath);
-        const frameBase64 = frameData.toString('base64');
+        ffmpeg.on('close', (code) => {
+          if (code === 0) {
+            resolve();
+          } else {
+            console.error('FFmpeg error output:', errorOutput);
+            reject(new Error(`Failed to compress video: ${errorOutput}`));
+          }
+        });
+      });
 
-        // Generate prompt for video analysis
-        const prompt = `
-          Analyze this pushup video and provide feedback on:
-          1. Form and technique
-          2. Areas for improvement
-          3. Safety concerns (if any)
-          Be specific but concise in your feedback.
-        `;
+      // Read the compressed video
+      const videoData = await fs.promises.readFile(compressedPath);
+      const base64Video = videoData.toString('base64');
 
-        // Analyze the frame
-        const result = await model.generateContent({
-          contents: [{
-            parts: [{
-              text: prompt
-            }, {
-              inlineData: {
-                mimeType: 'image/jpeg',
-                data: frameBase64
-              }
-            }]
+      // Clean up compressed video
+      fs.unlinkSync(compressedPath);
+
+      // Generate prompt for video analysis
+      const prompt = `
+        Analyze this pushup video and provide feedback on:
+        1. Form and technique
+        2. Areas for improvement
+        3. Safety concerns (if any)
+        Be specific but concise in your feedback.
+      `;
+
+      // Analyze the video
+      const result = await model.generateContent({
+        contents: [{
+          parts: [{
+            text: prompt
+          }, {
+            inlineData: {
+              mimeType: req.file.mimetype,
+              data: base64Video
+            }
           }]
-        });
-        const response = await result.response.text();
+        }]
+      });
+      const response = await result.response.text();
 
+      // Clean up uploaded file
+      fs.unlinkSync(req.file.path);
 
-        //Improved error handling: Check for successful analysis and response
-        if (!response) {
-          console.error('No response received from Gemini API.');
-          throw new Error('Failed to analyze video: No response from Gemini.');
-        }
-
-
-        // Clean up uploaded file and frame
-        fs.unlinkSync(req.file.path);
-        fs.unlinkSync(framePath);
-
-        res.json({
-          success: true,
-          analysis: response,
-        });
-      } catch (error) {
-        console.error("Error extracting frame or analyzing video:", error);
-        //Clean up in case of error
-        if(fs.existsSync(framePath)) fs.unlinkSync(framePath);
-        res.status(500).json({
-          success: false,
-          message: "Failed to process form check",
-          error: error instanceof Error ? error.message : "Unknown error",
-        });
-      }
+      res.json({
+        success: true,
+        analysis: response,
+      });
     } catch (error) {
       console.error("Error processing form check:", error);
       res.status(500).json({
