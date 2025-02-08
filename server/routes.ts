@@ -25,7 +25,7 @@ const upload = multer({
 });
 
 if (!fs.existsSync("uploads")) {
-  fs.mkdirSync("uploads");
+  fs.mkdirSync("uploads", { recursive: true, mode: 0o777 });
 }
 
 export function registerRoutes(app: Express): Server {
