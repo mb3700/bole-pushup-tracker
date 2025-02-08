@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -93,20 +93,19 @@ export default function Home() {
     );
 
     if (view === 'daily') {
-      return sortedPushups.reduce((acc, entry) => {
+      const dailyData = sortedPushups.reduce((acc, entry) => {
         const dateKey = format(new Date(entry.date), "MM/dd");
-        const existingDay = acc.find(item => item.date === dateKey);
-
-        if (existingDay) {
-          existingDay.count += entry.count;
-        } else {
-          acc.push({
-            date: dateKey,
-            count: entry.count
-          });
+        if (!acc[dateKey]) {
+          acc[dateKey] = { total: 0 };
         }
+        acc[dateKey].total += entry.count;
         return acc;
-      }, [] as Array<{date: string, count: number}>);
+      }, {} as Record<string, { total: number }>);
+
+      return Object.entries(dailyData).map(([date, data]) => ({
+        date,
+        count: data.total,
+      }));
     }
 
     const aggregatedData = sortedPushups.reduce((acc, entry) => {
@@ -137,48 +136,14 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50/50">
-      <div className="relative h-48 sm:h-64 w-full mb-8">
-        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-r from-blue-500/10 to-cyan-500/10">
-          <img 
-            src="./images/bitmoji.jpeg" 
-            alt="Bitmoji Hero"
-            className="h-full w-auto object-contain"
-          />
-        </div>
-      </div>
       <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8 max-w-7xl">
         <header className="text-center space-y-3 mb-10">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
-            Bole Pushup Tracker
+            Pushup Tracker
           </h1>
-          <div className="h-8">
-            {(() => {
-              const phrases = [
-                "Push harder than yesterday",
-                "Every rep counts",
-                "Transform your body, transform your life",
-                "Strong mind, stronger body",
-                "Progress is progress, no matter how small"
-              ];
-              const [index, setIndex] = useState(0);
-
-              useEffect(() => {
-                const timer = setInterval(() => {
-                  setIndex(i => (i + 1) % phrases.length);
-                }, 3000);
-                return () => clearInterval(timer);
-              }, []);
-
-              return (
-                <p
-                  key={index}
-                  className="text-muted-foreground text-sm sm:text-base animate-fade-in-out"
-                >
-                  {phrases[index]}
-                </p>
-              );
-            })()}
-          </div>
+          <p className="text-muted-foreground text-sm sm:text-base">
+            Track your progress, achieve your goals
+          </p>
         </header>
 
         <div className="grid gap-6 md:grid-cols-2 lg:gap-8">

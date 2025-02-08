@@ -45,13 +45,13 @@ export function registerRoutes(app: Express): Server {
     try {
       const { count, date } = req.body;
       console.log("Received pushup data:", { count, date });
-
+      
       if (!count || isNaN(count)) {
         return res.status(400).json({ message: "Invalid count value" });
       }
 
       console.log("Attempting database insert...");
-
+      
       // Verify pushups table exists
       const tables = await db.query.pushups.findMany();
       console.log("Current pushups table state:", tables);
@@ -82,47 +82,22 @@ export function registerRoutes(app: Express): Server {
   // Form check endpoint
   app.post("/api/form-check", upload.single("video"), async (req, res) => {
     try {
-      console.log("Processing video upload request");
-
       if (!req.file) {
-        console.error("No video file uploaded");
-        return res.status(400).json({ success: false, error: "No video file uploaded" });
+        return res.status(400).json({ message: "No video file uploaded" });
       }
 
-      console.log("Video file received:", req.file.path);
-
       if (!process.env.GEMINI_API_KEY) {
-        console.error("Gemini API key missing");
-        return res.status(500).json({ success: false, error: "AI service not configured" });
+        return res
+          .status(500)
+          .json({ message: "Gemini API key not configured" });
       }
 
       // Initialize Gemini AI
       const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      console.log("Initializing Gemini model");
-      const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
-      console.log("Processing video file:", req.file.path);
-      // Extract frames from video using ffmpeg
-      const framePath = `${req.file.path}_frame.jpg`;
-      await new Promise((resolve, reject) => {
-        const { spawn } = require('child_process');
-        const ffmpeg = spawn('ffmpeg', [
-          '-i', req.file.path,
-          '-vf', 'fps=1',
-          '-frames:v', '1',
-          '-update', '1',
-          framePath
-        ]);
-
-        ffmpeg.on('close', (code) => {
-          if (code === 0) resolve();
-          else reject(new Error(`FFmpeg failed with code ${code}`));
-        });
-      });
-
-      // Read the extracted frame
-      const frameData = await fs.promises.readFile(framePath);
-      const frameBase64 = frameData.toString('base64');
+      // Compress video using ffmpeg
+      const compressedPath = `${req.file.path}_compressed.mp4`;
       await new Promise(async (resolve, reject) => {
         const { spawn } = await import('child_process');
         const ffmpeg = spawn('ffmpeg', [
@@ -169,28 +144,20 @@ export function registerRoutes(app: Express): Server {
         Be specific but concise in your feedback.
       `;
 
-      // Analyze the frame
+      // Analyze the video
       const result = await model.generateContent({
         contents: [{
           parts: [{
             text: prompt
           }, {
             inlineData: {
-              mimeType: 'image/jpeg',
-              data: frameBase64
+              mimeType: req.file.mimetype,
+              data: base64Video
             }
           }]
         }]
       });
       const response = await result.response.text();
-
-
-      //Improved error handling: Check for successful analysis and response
-      if (!response) {
-        console.error('No response received from Gemini API.');
-        throw new Error('Failed to analyze video: No response from Gemini.');
-      }
-
 
       // Clean up uploaded file
       fs.unlinkSync(req.file.path);
