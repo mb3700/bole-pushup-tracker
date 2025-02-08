@@ -135,15 +135,15 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50/50">
-      <div className="relative h-48 sm:h-64 w-full mb-8 bg-gradient-to-r from-blue-500/10 to-cyan-500/10">
-        <div className="absolute inset-0 backdrop-blur-sm"></div>
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/30 to-cyan-500/30"></div>
+      <div className="relative h-64 sm:h-72 w-full mb-8 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/90 to-cyan-500/90"></div>
+        <div className="absolute inset-0 bg-[url('/images/bitmoji.jpeg')] bg-center bg-no-repeat opacity-20 blur-sm scale-110"></div>
         <img 
           src="/images/bitmoji.jpeg" 
           alt="Bitmoji Hero"
-          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-full w-auto max-w-none z-10"
-          style={{ objectFit: 'cover' }}
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-[90%] w-auto object-contain z-10"
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent"></div>
       </div>
       <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8 max-w-7xl">
         <header className="text-center space-y-3 mb-10">
