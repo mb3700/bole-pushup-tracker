@@ -140,13 +140,14 @@ export function registerRoutes(app: Express): Server {
 
       // Generate prompt for video analysis
       const prompt = `
-        Watch the entire video carefully (minimum 15 seconds) and analyze this pushup exercise:
-        1. Note the starting position AND any form changes during the set
-        2. If the exercise begins modified (e.g. on knees) but transitions to standard form, explicitly mention this transition
-        3. Analyze form and technique for each distinct phase
-        4. Areas for improvement
-        5. Safety concerns if any
-        Be precise about form transitions - watch the full video before providing analysis.
+        Watch the ENTIRE video carefully before providing analysis. Do not make assumptions based on the starting position:
+        1. Note ALL position changes throughout the COMPLETE set
+        2. If the exercise starts in one position (e.g. knees) and changes to another (e.g. standard), explicitly state this
+        3. DO NOT assume the starting position is maintained throughout
+        4. Analyze form for EACH phase of the exercise separately
+        5. List specific improvements needed for the ACTUAL form used
+        6. Only mention safety concerns relevant to the forms ACTUALLY demonstrated
+        Watch the full video (minimum 15 seconds) before responding.
       `;
 
       // Analyze the video
