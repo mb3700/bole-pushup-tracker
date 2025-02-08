@@ -51,6 +51,10 @@ export function registerRoutes(app: Express): Server {
       }
 
       console.log("Attempting database insert...");
+      
+      // Verify pushups table exists
+      const tables = await db.query.pushups.findMany();
+      console.log("Current pushups table state:", tables);
 
       const values = {
         count: Number(count),
