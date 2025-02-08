@@ -132,10 +132,11 @@ export default function Home() {
             <CardContent>
               <Form {...form}>
                 <form 
-                  onSubmit={form.handleSubmit((data) => {
+                  onSubmit={form.handleSubmit(async (data) => {
     const count = parseInt(data.count.toString(), 10);
     if (!isNaN(count) && count > 0) {
-      addEntry.mutate({ ...data, count });
+      await addEntry.mutateAsync({ ...data, count });
+      await refetch();
     }
   })} 
                   className="space-y-6"
