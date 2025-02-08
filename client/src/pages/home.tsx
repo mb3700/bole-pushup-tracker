@@ -149,7 +149,7 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50/50">
       <div className="relative h-48 sm:h-64 w-full mb-8 overflow-hidden hero-banner">
         <img 
-          src="/images/bitmoji.jpeg" 
+          src="/images/bitmoji-transparent.png" 
           alt="Bitmoji Hero"
           className="absolute inset-0 w-full h-full object-contain z-10"
         />
