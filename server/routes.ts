@@ -43,6 +43,8 @@ export function registerRoutes(app: Express): Server {
   app.post("/api/pushups", async (req, res) => {
     try {
       const { count, date } = req.body;
+      console.log("Received pushup data:", { count, date });
+      
       if (!count || isNaN(count)) {
         return res.status(400).json({ message: "Invalid count value" });
       }
@@ -55,6 +57,7 @@ export function registerRoutes(app: Express): Server {
         })
         .returning();
 
+      console.log("Inserted entry:", entry[0]);
       res.json(entry[0]);
     } catch (error) {
       console.error("Error adding pushup:", error);
