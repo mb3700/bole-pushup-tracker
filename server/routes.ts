@@ -49,6 +49,8 @@ export function registerRoutes(app: Express): Server {
         return res.status(400).json({ message: "Invalid count value" });
       }
 
+      console.log("Attempting database insert...");
+
       const entry = await db
         .insert(pushups)
         .values({
