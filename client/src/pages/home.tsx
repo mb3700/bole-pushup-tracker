@@ -149,9 +149,9 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50/50">
       <div className="relative h-64 w-full mb-8 overflow-hidden hero-banner">
         <img 
-          src="/images/celebration.png"
-          alt="Celebration Hero" 
-          className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 h-48 w-auto object-contain z-10"
+          src="/attached_assets/Untitled design (4).png"
+          alt="Celebration" 
+          className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 h-64 w-auto object-contain z-10"
         />
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute inset-0"></div>

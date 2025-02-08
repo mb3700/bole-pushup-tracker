@@ -29,6 +29,10 @@
   background: linear-gradient(to right, #000066, #0033cc);
   position: relative;
   overflow: hidden;
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @keyframes pulse {
