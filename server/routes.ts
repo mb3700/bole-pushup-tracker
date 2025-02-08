@@ -82,14 +82,18 @@ export function registerRoutes(app: Express): Server {
   // Form check endpoint
   app.post("/api/form-check", upload.single("video"), async (req, res) => {
     try {
+      console.log("Processing video upload request");
+      
       if (!req.file) {
-        return res.status(400).json({ message: "No video file uploaded" });
+        console.error("No video file uploaded");
+        return res.status(400).json({ success: false, error: "No video file uploaded" });
       }
 
+      console.log("Video file received:", req.file.path);
+
       if (!process.env.GEMINI_API_KEY) {
-        return res
-          .status(500)
-          .json({ message: "Gemini API key not configured" });
+        console.error("Gemini API key missing");
+        return res.status(500).json({ success: false, error: "AI service not configured" });
       }
 
       // Initialize Gemini AI
@@ -97,6 +101,7 @@ export function registerRoutes(app: Express): Server {
       const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
       // Compress video using ffmpeg
+      console.log("Starting video compression");
       const compressedPath = `${req.file.path}_compressed.mp4`;
       await new Promise(async (resolve, reject) => {
         const { spawn } = await import('child_process');
