@@ -136,13 +136,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50/50">
-      <div className="relative h-48 sm:h-64 w-full mb-8 bg-gradient-to-r from-blue-600/10 to-cyan-500/10">
-        <img 
-          src="/images/bitmoji.jpeg" 
-          alt="Bitmoji Hero"
-          className="absolute inset-0 w-full h-full object-contain"
-        />
-      </div>
       <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8 max-w-7xl">
         <header className="text-center space-y-3 mb-10">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
