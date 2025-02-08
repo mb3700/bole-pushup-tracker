@@ -136,7 +136,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50/50">
-      <div className="relative h-48 sm:h-64 w-full mb-8 bg-gradient-to-r from-blue-600/10 to-cyan-500/10">
+      <div className="relative h-48 sm:h-64 w-full mb-8">
         <img 
           src="/images/bitmoji.jpeg" 
           alt="Bitmoji Hero"
