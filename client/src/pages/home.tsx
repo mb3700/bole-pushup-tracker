@@ -57,10 +57,9 @@ export default function Home() {
     onSuccess: () => {
       refetch();
       toast({ title: "Success!", description: "Pushup entry added" });
-      form.reset({ 
-        count: 0,
-        date: format(new Date(), "yyyy-MM-dd")
-      });
+      form.reset();
+      form.setValue('count', 0);
+      form.setValue('date', format(new Date(), "yyyy-MM-dd"));
     },
     onError: (error) => {
       console.error("Error:", error);
