@@ -29,25 +29,30 @@ export default function Home() {
   const [view, setView] = useState<ViewType>('daily');
 
   const { data: pushups = [], refetch } = useQuery<PushupEntry[]>({
-    queryKey: ["/api/pushups"],
+    queryKey: ["pushups"],
     queryFn: async () => {
       const response = await fetch("/api/pushups");
       if (!response.ok) {
         throw new Error("Failed to fetch pushups");
       }
-      return response.json();
+      const data = await response.json();
+      console.log("Fetched pushups:", data);
+      return data;
     }
   });
 
   const addEntry = useMutation({
     mutationFn: async (data: FormData) => {
+      console.log("Sending data:", data);
       const res = await fetch("/api/pushups", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
       if (!res.ok) throw new Error("Failed to add entry");
-      return res.json();
+      const result = await res.json();
+      console.log("Response:", result);
+      return result;
     },
     onSuccess: () => {
       refetch();
@@ -57,6 +62,14 @@ export default function Home() {
         date: format(new Date(), "yyyy-MM-dd")
       });
     },
+    onError: (error) => {
+      console.error("Error:", error);
+      toast({ 
+        title: "Error", 
+        description: "Failed to add pushup entry",
+        variant: "destructive"
+      });
+    }
   });
 
   const form = useForm<FormData>({
