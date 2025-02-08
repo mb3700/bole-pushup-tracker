@@ -151,7 +151,7 @@ export default function Home() {
         <img 
           src="/images/celebration.png"
           alt="Celebration Hero" 
-          className="absolute right-1/2 transform translate-x-1/2 h-full w-auto object-contain z-10"
+          className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 h-48 w-auto object-contain z-10"
         />
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute inset-0"></div>
