@@ -30,6 +30,13 @@ export default function Home() {
 
   const { data: pushups = [], refetch } = useQuery<PushupEntry[]>({
     queryKey: ["/api/pushups"],
+    queryFn: async () => {
+      const response = await fetch("/api/pushups");
+      if (!response.ok) {
+        throw new Error("Failed to fetch pushups");
+      }
+      return response.json();
+    }
   });
 
   const addEntry = useMutation({
