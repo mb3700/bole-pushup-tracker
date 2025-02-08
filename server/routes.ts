@@ -101,9 +101,28 @@ export function registerRoutes(app: Express): Server {
       console.log("Initializing Gemini model");
       const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
 
-      // Compress video using ffmpeg
-      const compressedPath = `${req.file.path}_compressed.mp4`;
-      console.log("Starting video compression:", compressedPath);
+      console.log("Processing video file:", req.file.path);
+      // Extract frames from video using ffmpeg
+      const framePath = `${req.file.path}_frame.jpg`;
+      await new Promise((resolve, reject) => {
+        const { spawn } = require('child_process');
+        const ffmpeg = spawn('ffmpeg', [
+          '-i', req.file.path,
+          '-vf', 'fps=1',
+          '-frames:v', '1',
+          '-update', '1',
+          framePath
+        ]);
+
+        ffmpeg.on('close', (code) => {
+          if (code === 0) resolve();
+          else reject(new Error(`FFmpeg failed with code ${code}`));
+        });
+      });
+
+      // Read the extracted frame
+      const frameData = await fs.promises.readFile(framePath);
+      const frameBase64 = frameData.toString('base64');
       await new Promise(async (resolve, reject) => {
         const { spawn } = await import('child_process');
         const ffmpeg = spawn('ffmpeg', [
@@ -150,15 +169,15 @@ export function registerRoutes(app: Express): Server {
         Be specific but concise in your feedback.
       `;
 
-      // Analyze the video
+      // Analyze the frame
       const result = await model.generateContent({
         contents: [{
           parts: [{
             text: prompt
           }, {
             inlineData: {
-              mimeType: req.file.mimetype,
-              data: base64Video
+              mimeType: 'image/jpeg',
+              data: frameBase64
             }
           }]
         }]
