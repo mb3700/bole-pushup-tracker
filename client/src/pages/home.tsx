@@ -135,12 +135,19 @@ export default function Home() {
                   onSubmit={form.handleSubmit(async (data) => {
     const count = parseInt(data.count.toString(), 10);
     if (!isNaN(count) && count > 0) {
-      await addEntry.mutateAsync({ 
-        count,
-        date: data.date || format(new Date(), "yyyy-MM-dd")
-      });
-      form.reset();
-      await refetch();
+      try {
+        await addEntry.mutateAsync({ 
+          count,
+          date: data.date || format(new Date(), "yyyy-MM-dd")
+        });
+        form.reset({
+          count: 0,
+          date: format(new Date(), "yyyy-MM-dd")
+        });
+        refetch();
+      } catch (error) {
+        console.error("Error adding entry:", error);
+      }
     }
   })} 
                   className="space-y-6"
