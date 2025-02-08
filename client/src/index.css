@@ -13,55 +13,6 @@
   animation: fadeInOut 3s ease-in-out;
 }
 
-@keyframes gradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-.animate-gradient {
-  background: linear-gradient(-45deg, rgba(37, 99, 235, 0.1), rgba(34, 211, 238, 0.1));
-  background-size: 200% 200%;
-  animation: gradient 6s ease infinite;
-}
-
-.hero-banner {
-  background: linear-gradient(45deg, #000033, #1a237e, #311b92);
-  background-size: 200% 200%;
-  position: relative;
-  overflow: hidden;
-  min-height: 300px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: gradientBG 15s ease infinite;
-}
-
-@keyframes gradientBG {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-.hero-banner::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-.hero-banner .stars {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 0.8; }
-}
-
 @layer base {
   * {
     @apply border-border;
@@ -70,17 +21,4 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
-}
-
-@keyframes bounce-slow {
-  0%, 100% { transform: translate(-50%, -52%); }
-  50% { transform: translate(-50%, -48%); }
-}
-
-.animate-bounce-slow {
-  animation: bounce-slow 3s ease-in-out infinite;
-}
-
-.hero-banner img {
-  filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.3));
 }

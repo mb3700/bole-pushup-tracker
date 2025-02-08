@@ -102,16 +102,10 @@ export default function Home() {
         return acc;
       }, {} as Record<string, { total: number }>);
 
-      return Object.entries(dailyData)
-        .sort((a, b) => {
-          const dateA = new Date(`2025/${a[0]}`);
-          const dateB = new Date(`2025/${b[0]}`);
-          return dateA.getTime() - dateB.getTime();
-        })
-        .map(([date, data]) => ({
-          date,
-          count: data.total,
-        }));
+      return Object.entries(dailyData).map(([date, data]) => ({
+        date,
+        count: data.total,
+      }));
     }
 
     const aggregatedData = sortedPushups.reduce((acc, entry) => {
@@ -127,32 +121,26 @@ export default function Home() {
       }
 
       if (!acc[key]) {
-        acc[key] = { total: 0 };
+        acc[key] = { total: 0, count: 0 };
       }
       acc[key].total += entry.count;
+      acc[key].count++;
       return acc;
-    }, {} as Record<string, { total: number }>);
+    }, {} as Record<string, { total: number; count: number }>);
 
-    return Object.entries(aggregatedData)
-      .sort((a, b) => {
-        const dateA = new Date(a[0].includes("MM/dd") ? `2025/${a[0]}` : a[0]);
-        const dateB = new Date(b[0].includes("MM/dd") ? `2025/${b[0]}` : b[0]);
-        return dateA.getTime() - dateB.getTime();
-      })
-      .map(([date, data]) => ({
-        date,
-        count: data.total,
-      }));
+    return Object.entries(aggregatedData).map(([date, data]) => ({
+      date,
+      count: Math.round(data.total / data.count), // Average per period
+    }));
   }, [pushups, view]);
 
   return (
     <div className="min-h-screen bg-gray-50/50">
-      <div className="relative h-64 w-full mb-8 overflow-hidden hero-banner">
+      <div className="relative h-48 sm:h-64 w-full mb-8 bg-gradient-to-r from-blue-600/10 to-cyan-500/10">
         <img 
-          src="/images/celebration-stars.png"
-          alt="Celebration" 
-          className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 h-48 w-auto object-contain z-10 animate-bounce-slow"
-          style={{ maxWidth: 'none' }}
+          src="/images/bitmoji.jpeg" 
+          alt="Bitmoji Hero"
+          className="absolute inset-0 w-full h-full object-contain"
         />
       </div>
       <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8 max-w-7xl">
@@ -170,7 +158,7 @@ export default function Home() {
                 "Progress is progress, no matter how small"
               ];
               const [index, setIndex] = useState(0);
-
+              
               useEffect(() => {
                 const timer = setInterval(() => {
                   setIndex(i => (i + 1) % phrases.length);
@@ -291,11 +279,11 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4 sm:gap-6">
-                <div className="text-center p-6 animate-gradient rounded-lg">
+                <div className="text-center p-6 bg-primary/10 rounded-lg">
                   <div className="text-2xl sm:text-3xl lg:text-4xl font-bold">{totalPushups}</div>
                   <div className="text-sm sm:text-base text-muted-foreground mt-2">Total Pushups</div>
                 </div>
-                <div className="text-center p-6 animate-gradient rounded-lg">
+                <div className="text-center p-6 bg-primary/10 rounded-lg">
                   <div className="text-2xl sm:text-3xl lg:text-4xl font-bold">{dailyAverage}</div>
                   <div className="text-sm sm:text-base text-muted-foreground mt-2">Daily Average</div>
                 </div>
