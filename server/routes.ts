@@ -51,12 +51,14 @@ export function registerRoutes(app: Express): Server {
 
       console.log("Attempting database insert...");
 
+      const values = {
+        count: Number(count),
+        date: date ? new Date(date) : new Date(),
+      };
+      console.log("Inserting values:", values);
       const entry = await db
         .insert(pushups)
-        .values({
-          count: Number(count),
-          date: date ? new Date(date) : new Date(),
-        })
+        .values(values)
         .returning();
 
       console.log("Inserted entry:", entry[0]);
