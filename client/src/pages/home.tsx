@@ -102,10 +102,16 @@ export default function Home() {
         return acc;
       }, {} as Record<string, { total: number }>);
 
-      return Object.entries(dailyData).map(([date, data]) => ({
-        date,
-        count: data.total,
-      }));
+      return Object.entries(dailyData)
+        .sort((a, b) => {
+          const dateA = new Date(`2025/${a[0]}`);
+          const dateB = new Date(`2025/${b[0]}`);
+          return dateA.getTime() - dateB.getTime();
+        })
+        .map(([date, data]) => ({
+          date,
+          count: data.total,
+        }));
     }
 
     const aggregatedData = sortedPushups.reduce((acc, entry) => {
@@ -121,17 +127,22 @@ export default function Home() {
       }
 
       if (!acc[key]) {
-        acc[key] = { total: 0, count: 0 };
+        acc[key] = { total: 0 };
       }
       acc[key].total += entry.count;
-      acc[key].count++;
       return acc;
-    }, {} as Record<string, { total: number; count: number }>);
+    }, {} as Record<string, { total: number }>);
 
-    return Object.entries(aggregatedData).map(([date, data]) => ({
-      date,
-      count: Math.round(data.total / data.count), // Average per period
-    }));
+    return Object.entries(aggregatedData)
+      .sort((a, b) => {
+        const dateA = new Date(a[0].includes("MM/dd") ? `2025/${a[0]}` : a[0]);
+        const dateB = new Date(b[0].includes("MM/dd") ? `2025/${b[0]}` : b[0]);
+        return dateA.getTime() - dateB.getTime();
+      })
+      .map(([date, data]) => ({
+        date,
+        count: data.total,
+      }));
   }, [pushups, view]);
 
   return (
