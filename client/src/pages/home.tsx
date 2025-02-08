@@ -122,16 +122,15 @@ export default function Home() {
       }
 
       if (!acc[key]) {
-        acc[key] = { total: 0, count: 0 };
+        acc[key] = { total: 0 };
       }
       acc[key].total += entry.count;
-      acc[key].count++;
       return acc;
-    }, {} as Record<string, { total: number; count: number }>);
+    }, {} as Record<string, { total: number }>);
 
     return Object.entries(aggregatedData).map(([date, data]) => ({
       date,
-      count: Math.round(data.total / data.count), // Average per period
+      count: data.total // Total per period instead of average
     }));
   }, [pushups, view]);
 
