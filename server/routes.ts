@@ -83,7 +83,7 @@ export function registerRoutes(app: Express): Server {
   app.post("/api/form-check", upload.single("video"), async (req, res) => {
     try {
       console.log("Processing video upload request");
-      
+
       if (!req.file) {
         console.error("No video file uploaded");
         return res.status(400).json({ success: false, error: "No video file uploaded" });
