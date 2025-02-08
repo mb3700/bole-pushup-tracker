@@ -111,7 +111,7 @@ export function registerRoutes(app: Express): Server {
           '-preset', 'veryfast',
           '-movflags', '+faststart',
           '-pix_fmt', 'yuv420p',
-          '-t', '30',
+          '-t', '60',
           '-y',
           compressedPath
         ]);
@@ -140,11 +140,11 @@ export function registerRoutes(app: Express): Server {
 
       // Generate prompt for video analysis
       const prompt = `
-        Analyze this pushup video and provide feedback on:
-        1. Form and technique (noting any variations or position changes during the set)
+        Watch the entire video carefully and analyze this pushup exercise. Pay special attention to:
+        1. Form and technique throughout the set (note all position changes and transitions)
         2. Areas for improvement
         3. Safety concerns (if any)
-        Be specific about changes in form or position during the exercise. Be concise in your feedback.
+        Be specific about any changes in form or transitions between different pushup variations. Watch at least 15 seconds before providing analysis.
       `;
 
       // Analyze the video
