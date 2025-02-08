@@ -158,7 +158,7 @@ export default function Home() {
                 "Progress is progress, no matter how small"
               ];
               const [index, setIndex] = useState(0);
-              
+
               useEffect(() => {
                 const timer = setInterval(() => {
                   setIndex(i => (i + 1) % phrases.length);
@@ -279,11 +279,11 @@ export default function Home() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4 sm:gap-6">
-                <div className="text-center p-6 bg-primary/10 rounded-lg">
+                <div className="text-center p-6 animate-gradient rounded-lg">
                   <div className="text-2xl sm:text-3xl lg:text-4xl font-bold">{totalPushups}</div>
                   <div className="text-sm sm:text-base text-muted-foreground mt-2">Total Pushups</div>
                 </div>
-                <div className="text-center p-6 bg-primary/10 rounded-lg">
+                <div className="text-center p-6 animate-gradient rounded-lg">
                   <div className="text-2xl sm:text-3xl lg:text-4xl font-bold">{dailyAverage}</div>
                   <div className="text-sm sm:text-base text-muted-foreground mt-2">Daily Average</div>
                 </div>
