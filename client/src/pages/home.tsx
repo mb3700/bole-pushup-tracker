@@ -141,14 +141,11 @@ export default function Home() {
           <div className="absolute inset-0 bg-white/10 backdrop-blur-xl rounded-l-full -skew-x-12 translate-x-20"></div>
         </div>
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-6 w-full max-w-4xl px-4">
-          <div className="relative group">
-            <div className="absolute inset-0 bg-white/20 backdrop-blur-sm rounded-2xl"></div>
-            <img 
-              src="/images/bitmoji.jpeg" 
-              alt="Bitmoji Hero"
-              className="h-32 sm:h-40 w-auto object-contain mix-blend-screen transform hover:scale-105 transition-all duration-300 relative z-10"
-            />
-          </div>
+          <img 
+            src="/images/bitmoji.jpeg" 
+            alt="Bitmoji Hero"
+            className="h-32 sm:h-40 w-auto object-contain transform hover:scale-105 transition-all duration-300"
+          />
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white text-center leading-tight">
             Bole Pushup Tracker
           </h1>
