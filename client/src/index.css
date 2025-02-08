@@ -13,30 +13,6 @@
   animation: fadeInOut 3s ease-in-out;
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-
-@keyframes twinkle {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
-}
-
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-
-.star-field {
-  background-image: radial-gradient(2px 2px at 20px 30px, #eee, rgba(0,0,0,0)),
-                    radial-gradient(2px 2px at 40px 70px, #fff, rgba(0,0,0,0)),
-                    radial-gradient(2px 2px at 50px 160px, #ddd, rgba(0,0,0,0)),
-                    radial-gradient(2px 2px at 90px 40px, #fff, rgba(0,0,0,0)),
-                    radial-gradient(2px 2px at 130px 80px, #fff, rgba(0,0,0,0));
-  background-repeat: repeat;
-  animation: twinkle 4s ease-in-out infinite;
-}
-
 @layer base {
   * {
     @apply border-border;
