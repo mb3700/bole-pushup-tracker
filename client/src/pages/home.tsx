@@ -136,6 +136,16 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50/50">
+      <div className="relative h-72 sm:h-96 w-full mb-8 overflow-hidden hero-banner bg-gradient-to-r from-blue-950 to-indigo-950">
+        <div className="absolute inset-0 star-field"></div>
+        <div className="container mx-auto h-full flex items-center justify-center">
+          <img 
+            src="/images/celebration.png" 
+            alt="Celebration Hero"
+            className="h-full w-auto object-contain relative z-10 animate-float"
+          />
+        </div>
+      </div>
       <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8 max-w-7xl">
         <header className="text-center space-y-3 mb-10">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
