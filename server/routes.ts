@@ -141,10 +141,10 @@ export function registerRoutes(app: Express): Server {
       // Generate prompt for video analysis
       const prompt = `
         Analyze this pushup video and provide feedback on:
-        1. Form and technique
+        1. Form and technique (noting any variations or position changes during the set)
         2. Areas for improvement
         3. Safety concerns (if any)
-        Be specific but concise in your feedback.
+        Be specific about changes in form or position during the exercise. Be concise in your feedback.
       `;
 
       // Analyze the video
