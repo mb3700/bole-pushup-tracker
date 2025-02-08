@@ -141,9 +141,34 @@ export default function Home() {
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
             Bole Pushup Tracker
           </h1>
-          <p className="text-muted-foreground text-sm sm:text-base">
-            Track your progress, achieve your goals
-          </p>
+          <div className="h-8">
+            {(() => {
+              const phrases = [
+                "Push harder than yesterday",
+                "Every rep counts",
+                "Transform your body, transform your life",
+                "Strong mind, stronger body",
+                "Progress is progress, no matter how small"
+              ];
+              const [index, setIndex] = useState(0);
+              
+              useEffect(() => {
+                const timer = setInterval(() => {
+                  setIndex(i => (i + 1) % phrases.length);
+                }, 3000);
+                return () => clearInterval(timer);
+              }, []);
+
+              return (
+                <p
+                  key={index}
+                  className="text-muted-foreground text-sm sm:text-base animate-fade-in-out"
+                >
+                  {phrases[index]}
+                </p>
+              );
+            })()}
+          </div>
         </header>
 
         <div className="grid gap-6 md:grid-cols-2 lg:gap-8">
