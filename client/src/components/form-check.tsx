@@ -50,13 +50,18 @@ export function FormCheck() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to analyze video');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to analyze video');
       }
 
       const data = await response.json();
       
       if (!data.success) {
-        throw new Error(data.error || 'Failed to analyze video');
+        throw new Error(data.error || data.message || 'Failed to analyze video');
+      }
+
+      if (!data.analysis) {
+        throw new Error('No analysis received from server');
       }
 
       setFeedback(data.analysis);

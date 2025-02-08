@@ -82,15 +82,16 @@ export function registerRoutes(app: Express): Server {
   // Form check endpoint
   app.post("/api/form-check", upload.single("video"), async (req, res) => {
     try {
-      if (!req.file) {
-        return res.status(400).json({ message: "No video file uploaded" });
-      }
+      try {
+        if (!req.file) {
+          return res.status(400).json({ message: "No video file uploaded" });
+        }
 
-      if (!process.env.GEMINI_API_KEY) {
-        return res
-          .status(500)
-          .json({ message: "Gemini API key not configured" });
-      }
+        if (!process.env.GEMINI_API_KEY) {
+          return res
+            .status(500)
+            .json({ message: "Gemini API key not configured" });
+        }
 
       // Initialize Gemini AI
       const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -168,12 +169,21 @@ export function registerRoutes(app: Express): Server {
       });
     } catch (error) {
       console.error("Error processing form check:", error);
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
       res.status(500).json({
         success: false,
-        message: "Failed to process form check",
-        error: error instanceof Error ? error.message : "Unknown error",
+        message: `Failed to process form check: ${errorMessage}`,
+        error: errorMessage,
       });
     }
+  } catch (error) {
+    console.error("Error in form check route:", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error during form check",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
   });
 
   app.delete("/api/pushups/:id", async (req, res) => {
