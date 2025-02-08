@@ -139,7 +139,7 @@ export default function Home() {
       <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8 max-w-7xl">
         <header className="text-center space-y-3 mb-10">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
-            Pushup Tracker
+            Bole Pushup Tracker
           </h1>
           <p className="text-muted-foreground text-sm sm:text-base">
             Track your progress, achieve your goals
