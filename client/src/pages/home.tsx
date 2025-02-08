@@ -79,8 +79,13 @@ export default function Home() {
     },
   });
 
-  const totalPushups = pushups.reduce((sum, entry) => sum + entry.count, 0);
-  const dailyAverage = Math.round(totalPushups / (pushups.length || 1));
+  const [totalPushups, dailyAverage] = useMemo(() => {
+    if (!pushups?.length) return [0, 0];
+
+    const total = pushups.reduce((acc, entry) => acc + entry.count, 0);
+    const days = new Set(pushups.map((entry) => format(new Date(entry.date), "yyyy-MM-dd"))).size;
+    return [total, Math.round(total / Math.max(days, 1))];
+  }, [pushups]);
 
   const chartData = useMemo(() => {
     const sortedPushups = [...pushups].sort((a, b) => 
