@@ -50,12 +50,11 @@
 }
 
 .hero-banner img {
-  transform: scale(1.2);
   transition: transform 0.3s ease-in-out;
 }
 
 .hero-banner:hover img {
-  transform: scale(1.25);
+  transform: translate(50%) scale(1.35);
 }
 
 @keyframes pulse {
