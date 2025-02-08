@@ -166,9 +166,19 @@ export default function Home() {
         date: data.date || format(new Date(), "yyyy-MM-dd")
       };
       console.log("Submitting:", submission);
-      const result = await addEntry.mutateAsync(submission);
-      console.log("Server response:", result);
-      await refetch();
+      try {
+        const result = await addEntry.mutateAsync(submission);
+        console.log("Server response:", result);
+        await refetch();
+        toast({ title: "Success!", description: `Added ${count} pushups` });
+      } catch (error) {
+        console.error("Submission error:", error);
+        toast({ 
+          title: "Error",
+          description: "Failed to add pushups",
+          variant: "destructive"
+        });
+      }
       form.reset({
         count: 0,
         date: format(new Date(), "yyyy-MM-dd")
