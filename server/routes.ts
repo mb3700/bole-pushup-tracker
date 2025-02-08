@@ -140,11 +140,13 @@ export function registerRoutes(app: Express): Server {
 
       // Generate prompt for video analysis
       const prompt = `
-        Watch the entire video carefully and analyze this pushup exercise. Pay special attention to:
-        1. Form and technique throughout the set (note all position changes and transitions)
-        2. Areas for improvement
-        3. Safety concerns (if any)
-        Be specific about any changes in form or transitions between different pushup variations. Watch at least 15 seconds before providing analysis.
+        Watch the entire video carefully (minimum 15 seconds) and analyze this pushup exercise:
+        1. Note the starting position AND any form changes during the set
+        2. If the exercise begins modified (e.g. on knees) but transitions to standard form, explicitly mention this transition
+        3. Analyze form and technique for each distinct phase
+        4. Areas for improvement
+        5. Safety concerns if any
+        Be precise about form transitions - watch the full video before providing analysis.
       `;
 
       // Analyze the video
