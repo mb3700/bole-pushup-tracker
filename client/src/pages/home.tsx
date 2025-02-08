@@ -135,20 +135,27 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50/50">
-      <div className="relative h-48 sm:h-64 w-full mb-8 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/30 to-cyan-500/30"></div>
-        <img 
-          src="/images/bitmoji.jpeg" 
-          alt="Bitmoji Hero"
-          className="absolute inset-0 w-full h-full object-contain z-10"
-          style={{ objectPosition: 'center' }}
-        />
+      <div className="relative h-[45vh] sm:h-[50vh] w-full mb-12 overflow-hidden bg-gradient-to-br from-blue-600 to-cyan-500">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.1),transparent_60%)]"></div>
+        <div className="absolute right-0 top-0 w-1/2 h-full">
+          <div className="absolute inset-0 bg-white/10 backdrop-blur-xl rounded-l-full -skew-x-12 translate-x-20"></div>
+        </div>
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-6 w-full max-w-4xl px-4">
+          <img 
+            src="/images/bitmoji.jpeg" 
+            alt="Bitmoji Hero"
+            className="h-32 sm:h-40 w-auto object-contain rounded-2xl shadow-2xl transform hover:scale-105 transition-transform duration-300"
+          />
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white text-center leading-tight">
+            Bole Pushup Tracker
+          </h1>
+          <p className="text-lg sm:text-xl text-white/90 font-medium tracking-wide max-w-2xl text-center">
+            Transform your body, transform your life
+          </p>
+        </div>
       </div>
       <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8 max-w-7xl">
         <header className="text-center space-y-3 mb-10">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
-            Bole Pushup Tracker
-          </h1>
           <div className="h-8">
             {(() => {
               const phrases = [
