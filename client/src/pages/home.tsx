@@ -93,19 +93,20 @@ export default function Home() {
     );
 
     if (view === 'daily') {
-      const dailyData = sortedPushups.reduce((acc, entry) => {
+      return sortedPushups.reduce((acc, entry) => {
         const dateKey = format(new Date(entry.date), "MM/dd");
-        if (!acc[dateKey]) {
-          acc[dateKey] = { total: 0 };
+        const existingDay = acc.find(item => item.date === dateKey);
+        
+        if (existingDay) {
+          existingDay.count += entry.count;
+        } else {
+          acc.push({
+            date: dateKey,
+            count: entry.count
+          });
         }
-        acc[dateKey].total += entry.count;
         return acc;
-      }, {} as Record<string, { total: number }>);
-
-      return Object.entries(dailyData).map(([date, data]) => ({
-        date,
-        count: data.total,
-      }));
+      }, [] as Array<{date: string, count: number}>);
     }
 
     const aggregatedData = sortedPushups.reduce((acc, entry) => {
