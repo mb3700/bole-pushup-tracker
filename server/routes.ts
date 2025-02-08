@@ -88,11 +88,12 @@ export function registerRoutes(app: Express): Server {
         }
 
         const apiKey = process.env.GEMINI_API_KEY;
+        const isDeployment = process.env.REPLIT_DEPLOYMENT === "1";
         console.log("Full environment check:", {
           hasGeminiKey: !!process.env.GEMINI_API_KEY,
           environment: process.env.NODE_ENV,
           keyPrefix: apiKey?.substring(0, 4) || 'none',
-          allEnvKeys: Object.keys(process.env),
+          isDeployment,
           deploymentMode: process.env.DEPLOYMENT || 'not set'
         });
         if (!apiKey) {
