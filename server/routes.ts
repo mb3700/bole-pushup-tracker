@@ -31,6 +31,7 @@ if (!fs.existsSync("uploads")) {
 export function registerRoutes(app: Express): Server {
   app.get("/api/pushups", async (req, res) => {
     try {
+      console.log("Fetching pushups from database...");
       const entries = await db.select().from(pushups);
       console.log("Database entries:", entries);
       res.json(entries);
