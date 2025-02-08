@@ -57,12 +57,17 @@ export function registerRoutes(app: Express): Server {
         date: date ? new Date(date) : new Date(),
       };
       console.log("Inserting values:", values);
-      const entry = await db
-        .insert(pushups)
-        .values(values)
-        .returning();
-
-      console.log("Inserted entry:", entry[0]);
+      try {
+        const entry = await db
+          .insert(pushups)
+          .values(values)
+          .returning();
+        console.log("Successfully inserted entry:", entry[0]);
+        return res.status(200).json(entry[0]);
+      } catch (err) {
+        console.error("Database insertion error:", err);
+        return res.status(500).json({ error: "Failed to insert pushup entry" });
+      }
       res.json(entry[0]);
     } catch (error) {
       console.error("Error adding pushup:", error);
