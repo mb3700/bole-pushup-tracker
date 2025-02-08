@@ -132,7 +132,12 @@ export default function Home() {
             <CardContent>
               <Form {...form}>
                 <form 
-                  onSubmit={form.handleSubmit((data) => addEntry.mutate(data))} 
+                  onSubmit={form.handleSubmit((data) => {
+    const count = parseInt(data.count.toString(), 10);
+    if (!isNaN(count) && count > 0) {
+      addEntry.mutate({ ...data, count });
+    }
+  })} 
                   className="space-y-6"
                 >
                   <FormField
