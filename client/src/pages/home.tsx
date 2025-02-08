@@ -155,19 +155,17 @@ export default function Home() {
                   onSubmit={form.handleSubmit(async (data) => {
     const count = parseInt(data.count.toString(), 10);
     if (!isNaN(count) && count > 0) {
-      try {
-        await addEntry.mutateAsync({ 
-          count,
-          date: data.date || format(new Date(), "yyyy-MM-dd")
-        });
-        form.reset({
-          count: 0,
-          date: format(new Date(), "yyyy-MM-dd")
-        });
-        refetch();
-      } catch (error) {
-        console.error("Error adding entry:", error);
-      }
+      console.log("Submitting pushup entry:", { count, date: data.date });
+      await addEntry.mutateAsync({ 
+        count,
+        date: data.date || format(new Date(), "yyyy-MM-dd")
+      });
+    } else {
+      toast({ 
+        title: "Invalid input", 
+        description: "Please enter a number greater than 0",
+        variant: "destructive"
+      });
     }
   })} 
                   className="space-y-6"
