@@ -144,7 +144,8 @@ export default function Home() {
           <img 
             src="/images/bitmoji.jpeg" 
             alt="Celebration Hero"
-            className="h-32 sm:h-40 w-auto object-contain transform hover:scale-105 transition-all duration-300"
+            className="relative z-10 h-32 sm:h-40 w-auto object-contain transform hover:scale-105 transition-all duration-300"
+            loading="eager"
           />
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white text-center leading-tight">
             Bole Pushup Tracker
