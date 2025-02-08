@@ -88,6 +88,7 @@ export function registerRoutes(app: Express): Server {
         }
 
         const apiKey = process.env.GEMINI_API_KEY;
+        console.log("Checking Gemini API key:", apiKey ? "Key exists" : "Key missing");
         if (!apiKey) {
           console.error("Missing GEMINI_API_KEY environment variable");
           return res
