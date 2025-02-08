@@ -149,7 +149,7 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50/50">
       <div className="relative h-64 w-full mb-8 overflow-hidden hero-banner">
         <img 
-          src="/images/bitmoji-transparent.png"
+          src="/attached_assets/bitmoji%201.jpeg"
           alt="Celebration" 
           className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 h-48 w-auto object-contain z-10"
           style={{ maxWidth: 'none' }}
