@@ -87,14 +87,16 @@ export function registerRoutes(app: Express): Server {
           return res.status(400).json({ message: "No video file uploaded" });
         }
 
-        if (!process.env.GEMINI_API_KEY) {
+        const apiKey = process.env.GEMINI_API_KEY;
+        if (!apiKey) {
+          console.error("Missing GEMINI_API_KEY environment variable");
           return res
             .status(500)
-            .json({ message: "Gemini API key not configured" });
+            .json({ message: "Gemini API key not configured - please check environment variables" });
         }
 
       // Initialize Gemini AI
-      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+      const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
 
       // Compress video using ffmpeg
