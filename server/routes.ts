@@ -98,11 +98,12 @@ export function registerRoutes(app: Express): Server {
 
       // Initialize Gemini AI
       const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+      console.log("Initializing Gemini model");
+      const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
 
       // Compress video using ffmpeg
-      console.log("Starting video compression");
       const compressedPath = `${req.file.path}_compressed.mp4`;
+      console.log("Starting video compression:", compressedPath);
       await new Promise(async (resolve, reject) => {
         const { spawn } = await import('child_process');
         const ffmpeg = spawn('ffmpeg', [
