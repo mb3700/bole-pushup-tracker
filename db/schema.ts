@@ -9,7 +9,6 @@ export const users = pgTable("users", {
 
 export const pushups = pgTable("pushups", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id).default(1),
   count: integer("count").notNull(),
   date: timestamp("date").notNull().defaultNow(),
 });
