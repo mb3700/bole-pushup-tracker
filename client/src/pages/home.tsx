@@ -151,7 +151,7 @@ export default function Home() {
         <img 
           src="/images/bitmoji-transparent.png" 
           alt="Bitmoji Hero"
-          className="absolute right-0 h-full w-auto object-contain z-10"
+          className="absolute right-0 h-64 w-auto object-contain z-10"
         />
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute inset-0 bg-[#000000]/10"></div>
