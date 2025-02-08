@@ -45,13 +45,13 @@ export function registerRoutes(app: Express): Server {
     try {
       const { count, date } = req.body;
       console.log("Received pushup data:", { count, date });
-      
+
       if (!count || isNaN(count)) {
         return res.status(400).json({ message: "Invalid count value" });
       }
 
       console.log("Attempting database insert...");
-      
+
       // Verify pushups table exists
       const tables = await db.query.pushups.findMany();
       console.log("Current pushups table state:", tables);
