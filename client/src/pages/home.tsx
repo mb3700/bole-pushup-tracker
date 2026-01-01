@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { format, startOfWeek, startOfMonth, parse, isValid } from "date-fns";
+import { format, startOfWeek, startOfMonth, parse, isValid, parseISO } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { Dumbbell, Trophy } from "lucide-react";
 import { FormCheck } from "@/components/form-check";
@@ -15,6 +15,14 @@ type PushupEntry = {
   id: number;
   count: number;
   date: string;
+};
+
+// Helper to parse date without timezone shift
+const parseLocalDate = (dateString: string): Date => {
+  // Extract just the date portion (YYYY-MM-DD) and create local date
+  const dateOnly = dateString.split('T')[0];
+  const [year, month, day] = dateOnly.split('-').map(Number);
+  return new Date(year, month - 1, day);
 };
 
 type FormData = {
@@ -82,18 +90,18 @@ export default function Home() {
     if (!pushups?.length) return [0, 0];
 
     const total = pushups.reduce((acc, entry) => acc + entry.count, 0);
-    const days = new Set(pushups.map((entry) => format(new Date(entry.date), "yyyy-MM-dd"))).size;
+    const days = new Set(pushups.map((entry) => format(parseLocalDate(entry.date), "yyyy-MM-dd"))).size;
     return [total, Math.round(total / Math.max(days, 1))];
   }, [pushups]);
 
   const chartData = useMemo(() => {
     const sortedPushups = [...pushups].sort((a, b) => 
-      new Date(a.date).getTime() - new Date(b.date).getTime()
+      parseLocalDate(a.date).getTime() - parseLocalDate(b.date).getTime()
     );
 
     if (view === 'daily') {
       return sortedPushups.reduce((acc, entry) => {
-        const dateKey = format(new Date(entry.date), "MM/dd");
+        const dateKey = format(parseLocalDate(entry.date), "MM/dd");
         const existingDay = acc.find(item => item.date === dateKey);
 
         if (existingDay) {
@@ -109,7 +117,7 @@ export default function Home() {
     }
 
     const aggregatedData = sortedPushups.reduce((acc, entry) => {
-      const date = new Date(entry.date);
+      const date = parseLocalDate(entry.date);
       let key: string;
 
       if (view === 'weekly') {
