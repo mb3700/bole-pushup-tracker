@@ -8,12 +8,18 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { format, startOfWeek, startOfMonth, parse, isValid, parseISO } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
-import { Dumbbell, Trophy } from "lucide-react";
+import { Dumbbell, Trophy, Footprints } from "lucide-react";
 import { FormCheck } from "@/components/form-check";
 
 type PushupEntry = {
   id: number;
   count: number;
+  date: string;
+};
+
+type WalkEntry = {
+  id: number;
+  miles: number;
   date: string;
 };
 
@@ -25,8 +31,13 @@ const parseLocalDate = (dateString: string): Date => {
   return new Date(year, month - 1, day);
 };
 
-type FormData = {
+type PushupFormData = {
   count: number;
+  date: string;
+};
+
+type WalkFormData = {
+  miles: number;
   date: string;
 };
 
@@ -35,6 +46,7 @@ type ViewType = 'daily' | 'weekly' | 'monthly';
 export default function Home() {
   const { toast } = useToast();
   const [view, setView] = useState<ViewType>('daily');
+  const [walkView, setWalkView] = useState<ViewType>('daily');
 
   const { data: pushups = [], refetch } = useQuery<PushupEntry[]>({
     queryKey: ["pushups"],
@@ -44,23 +56,30 @@ export default function Home() {
         throw new Error("Failed to fetch pushups");
       }
       const data = await response.json();
-      console.log("Fetched pushups:", data);
       return data;
     }
   });
 
+  const { data: walks = [], refetch: refetchWalks } = useQuery<WalkEntry[]>({
+    queryKey: ["walks"],
+    queryFn: async () => {
+      const response = await fetch("/api/walks");
+      if (!response.ok) {
+        throw new Error("Failed to fetch walks");
+      }
+      return response.json();
+    }
+  });
+
   const addEntry = useMutation({
-    mutationFn: async (data: FormData) => {
-      console.log("Sending data:", data);
+    mutationFn: async (data: PushupFormData) => {
       const res = await fetch("/api/pushups", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
       if (!res.ok) throw new Error("Failed to add entry");
-      const result = await res.json();
-      console.log("Response:", result);
-      return result;
+      return res.json();
     },
     onSuccess: () => {
       refetch();
@@ -79,20 +98,62 @@ export default function Home() {
     }
   });
 
-  const form = useForm<FormData>({
+  const addWalkEntry = useMutation({
+    mutationFn: async (data: WalkFormData) => {
+      const res = await fetch("/api/walks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to add walk");
+      return res.json();
+    },
+    onSuccess: () => {
+      refetchWalks();
+      toast({ title: "Success!", description: "Walk entry added" });
+      walkForm.reset();
+      walkForm.setValue('miles', 0);
+      walkForm.setValue('date', format(new Date(), "yyyy-MM-dd"));
+    },
+    onError: (error) => {
+      console.error("Error:", error);
+      toast({ 
+        title: "Error", 
+        description: "Failed to add walk entry",
+        variant: "destructive"
+      });
+    }
+  });
+
+  const form = useForm<PushupFormData>({
     defaultValues: {
       count: 0,
       date: format(new Date(), "yyyy-MM-dd"),
     },
   });
 
-  const [totalPushups, dailyAverage] = useMemo(() => {
+  const walkForm = useForm<WalkFormData>({
+    defaultValues: {
+      miles: 0,
+      date: format(new Date(), "yyyy-MM-dd"),
+    },
+  });
+
+  const [totalPushups, dailyPushupAverage] = useMemo(() => {
     if (!pushups?.length) return [0, 0];
 
     const total = pushups.reduce((acc, entry) => acc + entry.count, 0);
     const days = new Set(pushups.map((entry) => format(parseLocalDate(entry.date), "yyyy-MM-dd"))).size;
     return [total, Math.round(total / Math.max(days, 1))];
   }, [pushups]);
+
+  const [totalMiles, dailyMilesAverage] = useMemo(() => {
+    if (!walks?.length) return [0, 0];
+
+    const total = walks.reduce((acc, entry) => acc + entry.miles, 0);
+    const days = new Set(walks.map((entry) => format(parseLocalDate(entry.date), "yyyy-MM-dd"))).size;
+    return [total.toFixed(1), (total / Math.max(days, 1)).toFixed(1)];
+  }, [walks]);
 
   const chartData = useMemo(() => {
     const sortedPushups = [...pushups].sort((a, b) => 
@@ -137,9 +198,56 @@ export default function Home() {
 
     return Object.entries(aggregatedData).map(([date, data]) => ({
       date,
-      count: data.total // Total per period instead of average
+      count: data.total
     }));
   }, [pushups, view]);
+
+  const walkChartData = useMemo(() => {
+    const sortedWalks = [...walks].sort((a, b) => 
+      parseLocalDate(a.date).getTime() - parseLocalDate(b.date).getTime()
+    );
+
+    if (walkView === 'daily') {
+      return sortedWalks.reduce((acc, entry) => {
+        const dateKey = format(parseLocalDate(entry.date), "MM/dd");
+        const existingDay = acc.find(item => item.date === dateKey);
+
+        if (existingDay) {
+          existingDay.miles += entry.miles;
+        } else {
+          acc.push({
+            date: dateKey,
+            miles: entry.miles
+          });
+        }
+        return acc;
+      }, [] as Array<{date: string, miles: number}>);
+    }
+
+    const aggregatedData = sortedWalks.reduce((acc, entry) => {
+      const date = parseLocalDate(entry.date);
+      let key: string;
+
+      if (walkView === 'weekly') {
+        const weekStart = startOfWeek(date);
+        key = format(weekStart, "MM/dd");
+      } else {
+        const monthStart = startOfMonth(date);
+        key = format(monthStart, "MMM yyyy");
+      }
+
+      if (!acc[key]) {
+        acc[key] = { total: 0 };
+      }
+      acc[key].total += entry.miles;
+      return acc;
+    }, {} as Record<string, { total: number }>);
+
+    return Object.entries(aggregatedData).map(([date, data]) => ({
+      date,
+      miles: data.total
+    }));
+  }, [walks, walkView]);
 
   return (
     <div className="min-h-screen bg-gray-50/50">
@@ -155,7 +263,7 @@ export default function Home() {
             className="h-32 sm:h-40 w-auto object-contain rounded-2xl shadow-2xl transform hover:scale-105 transition-transform duration-300"
           />
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white text-center leading-tight">
-            Bole Pushup Tracker
+            Bole Fitness Tracker
           </h1>
           <p className="text-lg sm:text-xl text-white/90 font-medium tracking-wide max-w-2xl text-center">
             Transform your body, transform your life
@@ -290,7 +398,7 @@ export default function Home() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
                 <Trophy className="h-5 w-5" />
-                Statistics
+                Pushup Stats
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -300,7 +408,105 @@ export default function Home() {
                   <div className="text-sm sm:text-base text-muted-foreground mt-2">Total Pushups</div>
                 </div>
                 <div className="text-center p-6 bg-primary/10 rounded-lg">
-                  <div className="text-2xl sm:text-3xl lg:text-4xl font-bold">{dailyAverage}</div>
+                  <div className="text-2xl sm:text-3xl lg:text-4xl font-bold">{dailyPushupAverage}</div>
+                  <div className="text-sm sm:text-base text-muted-foreground mt-2">Daily Average</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="md:min-h-[350px]">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <Footprints className="h-5 w-5" />
+                Log Walk
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Form {...walkForm}>
+                <form 
+                  onSubmit={walkForm.handleSubmit(async (data) => {
+                    const miles = parseFloat(data.miles.toString());
+                    if (!isNaN(miles) && miles > 0) {
+                      try {
+                        await addWalkEntry.mutateAsync({
+                          miles,
+                          date: data.date || format(new Date(), "yyyy-MM-dd")
+                        });
+                      } catch (error) {
+                        console.error("Submission error:", error);
+                      }
+                    } else {
+                      toast({ 
+                        title: "Invalid input", 
+                        description: "Please enter a number greater than 0",
+                        variant: "destructive"
+                      });
+                    }
+                  })} 
+                  className="space-y-6"
+                >
+                  <FormField
+                    control={walkForm.control}
+                    name="miles"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-base">Miles Walked</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            step="0.1"
+                            {...field} 
+                            onChange={e => field.onChange(parseFloat(e.target.value))}
+                            className="text-lg h-12" 
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={walkForm.control}
+                    name="date"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-base">Date</FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="date" 
+                            {...field}
+                            className="text-lg h-12" 
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <Button 
+                    type="submit" 
+                    className="w-full h-12 text-lg font-semibold"
+                    disabled={addWalkEntry.isPending}
+                  >
+                    {addWalkEntry.isPending ? "Adding..." : "Add Walk"}
+                  </Button>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
+
+          <Card className="md:min-h-[350px]">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <Trophy className="h-5 w-5" />
+                Walk Stats
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-4 sm:gap-6">
+                <div className="text-center p-6 bg-green-500/10 rounded-lg">
+                  <div className="text-2xl sm:text-3xl lg:text-4xl font-bold">{totalMiles}</div>
+                  <div className="text-sm sm:text-base text-muted-foreground mt-2">Total Miles</div>
+                </div>
+                <div className="text-center p-6 bg-green-500/10 rounded-lg">
+                  <div className="text-2xl sm:text-3xl lg:text-4xl font-bold">{dailyMilesAverage}</div>
                   <div className="text-sm sm:text-base text-muted-foreground mt-2">Daily Average</div>
                 </div>
               </div>
@@ -312,55 +518,113 @@ export default function Home() {
           </div>
         </div>
 
-        <Card className="mt-6 lg:mt-8">
-          <CardHeader className="space-y-4">
-            <CardTitle className="text-lg sm:text-xl">Progress Chart</CardTitle>
-            <div className="flex gap-2 flex-wrap">
-              <Button
-                variant={view === 'daily' ? 'default' : 'outline'}
-                onClick={() => setView('daily')}
-                size="sm"
-                className="text-sm"
-              >
-                Daily
-              </Button>
-              <Button
-                variant={view === 'weekly' ? 'default' : 'outline'}
-                onClick={() => setView('weekly')}
-                size="sm"
-                className="text-sm"
-              >
-                Weekly
-              </Button>
-              <Button
-                variant={view === 'monthly' ? 'default' : 'outline'}
-                onClick={() => setView('monthly')}
-                size="sm"
-                className="text-sm"
-              >
-                Monthly
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px] sm:h-[400px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData}>
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line 
-                    type="monotone" 
-                    dataKey="count" 
-                    stroke="hsl(var(--primary))" 
-                    strokeWidth={2}
-                    dot={{ fill: "hsl(var(--primary))" }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="grid gap-6 md:grid-cols-2 mt-6 lg:mt-8">
+          <Card>
+            <CardHeader className="space-y-4">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <Dumbbell className="h-5 w-5" />
+                Pushup Progress
+              </CardTitle>
+              <div className="flex gap-2 flex-wrap">
+                <Button
+                  variant={view === 'daily' ? 'default' : 'outline'}
+                  onClick={() => setView('daily')}
+                  size="sm"
+                  className="text-sm"
+                >
+                  Daily
+                </Button>
+                <Button
+                  variant={view === 'weekly' ? 'default' : 'outline'}
+                  onClick={() => setView('weekly')}
+                  size="sm"
+                  className="text-sm"
+                >
+                  Weekly
+                </Button>
+                <Button
+                  variant={view === 'monthly' ? 'default' : 'outline'}
+                  onClick={() => setView('monthly')}
+                  size="sm"
+                  className="text-sm"
+                >
+                  Monthly
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[300px] sm:h-[350px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData}>
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line 
+                      type="monotone" 
+                      dataKey="count" 
+                      stroke="hsl(var(--primary))" 
+                      strokeWidth={2}
+                      dot={{ fill: "hsl(var(--primary))" }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="space-y-4">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <Footprints className="h-5 w-5" />
+                Walk Progress
+              </CardTitle>
+              <div className="flex gap-2 flex-wrap">
+                <Button
+                  variant={walkView === 'daily' ? 'default' : 'outline'}
+                  onClick={() => setWalkView('daily')}
+                  size="sm"
+                  className="text-sm"
+                >
+                  Daily
+                </Button>
+                <Button
+                  variant={walkView === 'weekly' ? 'default' : 'outline'}
+                  onClick={() => setWalkView('weekly')}
+                  size="sm"
+                  className="text-sm"
+                >
+                  Weekly
+                </Button>
+                <Button
+                  variant={walkView === 'monthly' ? 'default' : 'outline'}
+                  onClick={() => setWalkView('monthly')}
+                  size="sm"
+                  className="text-sm"
+                >
+                  Monthly
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="h-[300px] sm:h-[350px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={walkChartData}>
+                    <XAxis dataKey="date" />
+                    <YAxis />
+                    <Tooltip />
+                    <Line 
+                      type="monotone" 
+                      dataKey="miles" 
+                      stroke="#22c55e" 
+                      strokeWidth={2}
+                      dot={{ fill: "#22c55e" }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

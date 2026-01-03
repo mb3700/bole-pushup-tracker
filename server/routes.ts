@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { db } from "@db";
-import { pushups } from "@db/schema";
+import { pushups, walks } from "@db/schema";
 import { eq } from "drizzle-orm";
 import multer from "multer";
 import path from "path";
@@ -236,6 +236,48 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error("Error deleting pushup:", error);
       res.status(500).json({ message: "Failed to delete pushup entry" });
+    }
+  });
+
+  app.get("/api/walks", async (req, res) => {
+    try {
+      const entries = await db.select().from(walks);
+      res.json(entries);
+    } catch (error) {
+      console.error("Error fetching walks:", error);
+      res.status(500).json({ message: "Failed to fetch walk entries" });
+    }
+  });
+
+  app.post("/api/walks", async (req, res) => {
+    try {
+      const { miles, date } = req.body;
+
+      if (!miles || isNaN(miles)) {
+        return res.status(400).json({ message: "Invalid miles value" });
+      }
+
+      const values = {
+        miles: Number(miles),
+        date: date ? new Date(date) : new Date(),
+      };
+
+      const entry = await db.insert(walks).values(values).returning();
+      return res.status(200).json(entry[0]);
+    } catch (error) {
+      console.error("Error adding walk:", error);
+      res.status(500).json({ message: "Failed to add walk entry" });
+    }
+  });
+
+  app.delete("/api/walks/:id", async (req, res) => {
+    try {
+      const { id } = req.params;
+      await db.delete(walks).where(eq(walks.id, parseInt(id)));
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting walk:", error);
+      res.status(500).json({ message: "Failed to delete walk entry" });
     }
   });
 
