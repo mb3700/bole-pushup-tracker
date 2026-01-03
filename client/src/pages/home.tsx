@@ -84,9 +84,10 @@ export default function Home() {
     onSuccess: () => {
       refetch();
       toast({ title: "Success!", description: "Pushup entry added" });
-      form.reset();
-      form.setValue('count', 0);
-      form.setValue('date', format(new Date(), "yyyy-MM-dd"));
+      form.reset({
+        count: undefined as unknown as number,
+        date: format(new Date(), "yyyy-MM-dd"),
+      });
     },
     onError: (error) => {
       console.error("Error:", error);
@@ -111,9 +112,10 @@ export default function Home() {
     onSuccess: () => {
       refetchWalks();
       toast({ title: "Success!", description: "Walk entry added" });
-      walkForm.reset();
-      walkForm.setValue('miles', 0);
-      walkForm.setValue('date', format(new Date(), "yyyy-MM-dd"));
+      walkForm.reset({
+        miles: undefined as unknown as number,
+        date: format(new Date(), "yyyy-MM-dd"),
+      });
     },
     onError: (error) => {
       console.error("Error:", error);
@@ -127,14 +129,14 @@ export default function Home() {
 
   const form = useForm<PushupFormData>({
     defaultValues: {
-      count: 0,
+      count: undefined as unknown as number,
       date: format(new Date(), "yyyy-MM-dd"),
     },
   });
 
   const walkForm = useForm<WalkFormData>({
     defaultValues: {
-      miles: 0,
+      miles: undefined as unknown as number,
       date: format(new Date(), "yyyy-MM-dd"),
     },
   });
@@ -336,7 +338,7 @@ export default function Home() {
         });
       }
       form.reset({
-        count: 0,
+        count: undefined as unknown as number,
         date: format(new Date(), "yyyy-MM-dd")
       });
     } else {
