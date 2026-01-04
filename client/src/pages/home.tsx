@@ -343,6 +343,10 @@ export default function Home() {
         console.log("Server response:", result);
         await refetch();
         toast({ title: "Success!", description: `Added ${count} pushups` });
+        form.reset({
+          count: undefined as unknown as number,
+          date: format(new Date(), "yyyy-MM-dd")
+        });
       } catch (error) {
         console.error("Submission error:", error);
         toast({ 
@@ -351,10 +355,6 @@ export default function Home() {
           variant: "destructive"
         });
       }
-      form.reset({
-        count: undefined as unknown as number,
-        date: format(new Date(), "yyyy-MM-dd")
-      });
     } else {
       toast({ 
         title: "Invalid input", 
@@ -448,6 +448,10 @@ export default function Home() {
                         await addWalkEntry.mutateAsync({
                           miles,
                           date: data.date || format(new Date(), "yyyy-MM-dd")
+                        });
+                        walkForm.reset({
+                          miles: undefined as unknown as number,
+                          date: format(new Date(), "yyyy-MM-dd")
                         });
                       } catch (error) {
                         console.error("Submission error:", error);
