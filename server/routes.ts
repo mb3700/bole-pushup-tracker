@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { db } from "@db";
 import { pushups, walks } from "@db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import multer from "multer";
 import fs from "fs";
 import { GoogleGenerativeAI } from "@google/generative-ai";
@@ -221,7 +221,7 @@ export function registerRoutes(app: Express): Server {
     try {
       const { id } = req.params;
       const userId = req.user!.id;
-      await db.delete(pushups).where(eq(pushups.id, parseInt(id))).where(eq(pushups.userId, userId));
+      await db.delete(pushups).where(and(eq(pushups.id, parseInt(id)), eq(pushups.userId, userId)));
       res.json({ success: true });
     } catch (error) {
       console.error("Error deleting pushup:", error);
@@ -270,7 +270,7 @@ export function registerRoutes(app: Express): Server {
     try {
       const { id } = req.params;
       const userId = req.user!.id;
-      await db.delete(walks).where(eq(walks.id, parseInt(id))).where(eq(walks.userId, userId));
+      await db.delete(walks).where(and(eq(walks.id, parseInt(id)), eq(walks.userId, userId)));
       res.json({ success: true });
     } catch (error) {
       console.error("Error deleting walk:", error);
