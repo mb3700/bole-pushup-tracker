@@ -52,6 +52,7 @@ export function setupAuth(app: Express) {
     resave: false,
     saveUninitialized: false,
     store,
+    rolling: true,
     cookie: {
       maxAge: 30 * 24 * 60 * 60 * 1000,
       httpOnly: true,
