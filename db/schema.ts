@@ -9,12 +9,14 @@ export const users = pgTable("users", {
 
 export const pushups = pgTable("pushups", {
   id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
   count: integer("count").notNull(),
   date: timestamp("date").notNull().defaultNow(),
 });
 
 export const walks = pgTable("walks", {
   id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
   miles: real("miles").notNull(),
   date: timestamp("date").notNull().defaultNow(),
 });

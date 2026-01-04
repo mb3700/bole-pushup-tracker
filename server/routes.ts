@@ -4,9 +4,9 @@ import { db } from "@db";
 import { pushups, walks } from "@db/schema";
 import { eq } from "drizzle-orm";
 import multer from "multer";
-import path from "path";
 import fs from "fs";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { setupAuth } from "./auth";
 
 // Configure multer for video uploads
 const upload = multer({
@@ -29,11 +29,13 @@ if (!fs.existsSync("uploads")) {
 }
 
 export function registerRoutes(app: Express): Server {
+  setupAuth(app);
+
   app.get("/api/pushups", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
     try {
-      console.log("Fetching pushups from database...");
-      const entries = await db.select().from(pushups);
-      console.log("Database entries:", entries);
+      const userId = req.user!.id;
+      const entries = await db.select().from(pushups).where(eq(pushups.userId, userId));
       res.json(entries);
     } catch (error) {
       console.error("Error fetching pushups:", error);
@@ -42,45 +44,31 @@ export function registerRoutes(app: Express): Server {
   });
 
   app.post("/api/pushups", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
     try {
       const { count, date } = req.body;
-      console.log("Received pushup data:", { count, date });
+      const userId = req.user!.id;
 
       if (!count || isNaN(count)) {
         return res.status(400).json({ message: "Invalid count value" });
       }
 
-      console.log("Attempting database insert...");
-
-      // Verify pushups table exists
-      const tables = await db.query.pushups.findMany();
-      console.log("Current pushups table state:", tables);
-
       const values = {
+        userId,
         count: Number(count),
         date: date ? new Date(date) : new Date(),
       };
-      console.log("Inserting values:", values);
-      try {
-        const entry = await db
-          .insert(pushups)
-          .values(values)
-          .returning();
-        console.log("Successfully inserted entry:", entry[0]);
-        return res.status(200).json(entry[0]);
-      } catch (err) {
-        console.error("Database insertion error:", err);
-        return res.status(500).json({ error: "Failed to insert pushup entry" });
-      }
-      res.json(entry[0]);
+
+      const entry = await db.insert(pushups).values(values).returning();
+      return res.status(200).json(entry[0]);
     } catch (error) {
       console.error("Error adding pushup:", error);
       res.status(500).json({ message: "Failed to add pushup entry" });
     }
   });
 
-  // Form check endpoint
   app.post("/api/form-check", upload.single("video"), async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
     try {
       try {
         if (!req.file) {
@@ -229,9 +217,11 @@ export function registerRoutes(app: Express): Server {
   });
 
   app.delete("/api/pushups/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
     try {
       const { id } = req.params;
-      await db.delete(pushups).where(eq(pushups.id, parseInt(id)));
+      const userId = req.user!.id;
+      await db.delete(pushups).where(eq(pushups.id, parseInt(id))).where(eq(pushups.userId, userId));
       res.json({ success: true });
     } catch (error) {
       console.error("Error deleting pushup:", error);
@@ -240,8 +230,10 @@ export function registerRoutes(app: Express): Server {
   });
 
   app.get("/api/walks", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
     try {
-      const entries = await db.select().from(walks);
+      const userId = req.user!.id;
+      const entries = await db.select().from(walks).where(eq(walks.userId, userId));
       res.json(entries);
     } catch (error) {
       console.error("Error fetching walks:", error);
@@ -250,14 +242,17 @@ export function registerRoutes(app: Express): Server {
   });
 
   app.post("/api/walks", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
     try {
       const { miles, date } = req.body;
+      const userId = req.user!.id;
 
       if (!miles || isNaN(miles)) {
         return res.status(400).json({ message: "Invalid miles value" });
       }
 
       const values = {
+        userId,
         miles: Number(miles),
         date: date ? new Date(date) : new Date(),
       };
@@ -271,9 +266,11 @@ export function registerRoutes(app: Express): Server {
   });
 
   app.delete("/api/walks/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
     try {
       const { id } = req.params;
-      await db.delete(walks).where(eq(walks.id, parseInt(id)));
+      const userId = req.user!.id;
+      await db.delete(walks).where(eq(walks.id, parseInt(id))).where(eq(walks.userId, userId));
       res.json({ success: true });
     } catch (error) {
       console.error("Error deleting walk:", error);

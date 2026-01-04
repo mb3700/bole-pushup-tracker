@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { format, startOfWeek, startOfMonth, parse, isValid, parseISO } from "date-fns";
+import { format, startOfWeek, startOfMonth } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
-import { Dumbbell, Trophy, Footprints } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { Dumbbell, Trophy, Footprints, LogOut } from "lucide-react";
 import { FormCheck } from "@/components/form-check";
 
 type PushupEntry = {
@@ -45,6 +46,7 @@ type ViewType = 'daily' | 'weekly' | 'monthly';
 
 export default function Home() {
   const { toast } = useToast();
+  const { user, logoutMutation } = useAuth();
   const [view, setView] = useState<ViewType>('daily');
   const [walkView, setWalkView] = useState<ViewType>('daily');
 
@@ -257,6 +259,18 @@ export default function Home() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.1),transparent_60%)]"></div>
         <div className="absolute right-0 top-0 w-1/2 h-full">
           <div className="absolute inset-0 bg-white/10 backdrop-blur-xl rounded-l-full -skew-x-12 translate-x-20"></div>
+        </div>
+        <div className="absolute top-4 right-4 z-10">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => logoutMutation.mutate()}
+            disabled={logoutMutation.isPending}
+            className="bg-white/20 border-white/30 text-white hover:bg-white/30"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            {user?.username || "Logout"}
+          </Button>
         </div>
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-6 w-full max-w-4xl px-4">
           <img 
