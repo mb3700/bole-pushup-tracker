@@ -1,9 +1,17 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Video, Upload, Loader2 } from "lucide-react";
+import { Video, Upload, Loader2, Camera as CameraIcon } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import { Capacitor } from "@capacitor/core";
+
+// Get API base URL for native apps
+function getApiBaseUrl(): string {
+  if (Capacitor.isNativePlatform()) {
+    return import.meta.env.VITE_API_URL || '';
+  }
+  return '';
+}
 
 export function FormCheck() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -11,6 +19,7 @@ export function FormCheck() {
   const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const { toast } = useToast();
 
+  // Handle web file upload (works on both web and native as fallback)
   const handleVideoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -44,7 +53,8 @@ export function FormCheck() {
     formData.append('video', file);
 
     try {
-      const response = await fetch('/api/form-check', {
+      const baseUrl = getApiBaseUrl();
+      const response = await fetch(`${baseUrl}/api/form-check`, {
         method: 'POST',
         body: formData,
       });
@@ -55,7 +65,7 @@ export function FormCheck() {
       }
 
       const data = await response.json();
-      
+
       if (!data.success) {
         throw new Error(data.error || data.message || 'Failed to analyze video');
       }
@@ -90,12 +100,20 @@ export function FormCheck() {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex flex-col items-center space-y-4">
+          {/* Video upload area - works on both web and native */}
           <label htmlFor="video-upload" className="w-full">
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 cursor-pointer hover:border-primary transition-colors">
               <div className="flex flex-col items-center space-y-2">
-                <Upload className="h-8 w-8 text-gray-400" />
+                {Capacitor.isNativePlatform() ? (
+                  <CameraIcon className="h-8 w-8 text-gray-400" />
+                ) : (
+                  <Upload className="h-8 w-8 text-gray-400" />
+                )}
                 <div className="text-sm text-center">
-                  <span className="font-medium text-primary">Click to upload</span> or drag and drop
+                  <span className="font-medium text-primary">
+                    {Capacitor.isNativePlatform() ? "Tap to select video" : "Click to upload"}
+                  </span>
+                  {!Capacitor.isNativePlatform() && " or drag and drop"}
                   <p className="text-xs text-gray-500">MP4 or MOV up to 50MB</p>
                 </div>
               </div>
@@ -104,6 +122,7 @@ export function FormCheck() {
               id="video-upload"
               type="file"
               accept="video/*"
+              capture={Capacitor.isNativePlatform() ? "environment" : undefined}
               className="hidden"
               onChange={handleVideoUpload}
               disabled={isAnalyzing}
@@ -112,9 +131,9 @@ export function FormCheck() {
 
           {videoPreview && (
             <div className="w-full max-w-lg mx-auto mt-4">
-              <video 
-                src={videoPreview} 
-                controls 
+              <video
+                src={videoPreview}
+                controls
                 className="w-full rounded-lg shadow-lg"
               >
                 Your browser does not support the video tag.

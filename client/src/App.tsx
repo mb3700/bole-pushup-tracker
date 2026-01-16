@@ -7,12 +7,14 @@ import { ProtectedRoute } from "@/lib/protected-route";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import AuthPage from "@/pages/auth-page";
+import PrivacyPolicy from "@/pages/privacy-policy";
 
 function Router() {
   return (
     <Switch>
       <ProtectedRoute path="/" component={Home} />
       <Route path="/auth" component={AuthPage} />
+      <Route path="/privacy" component={PrivacyPolicy} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -9,8 +9,13 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "rec
 import { format, startOfWeek, startOfMonth } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
-import { Dumbbell, Trophy, Footprints, LogOut } from "lucide-react";
+import { Dumbbell, Trophy, Footprints, LogOut, List } from "lucide-react";
 import { FormCheck } from "@/components/form-check";
+import { HealthKitSettings } from "@/components/healthkit-settings";
+import { EntryList } from "@/components/entry-list";
+import { healthKitService } from "@/services/healthkit";
+import { Capacitor } from "@capacitor/core";
+import { apiRequest } from "@/lib/queryClient";
 
 type PushupEntry = {
   id: number;
@@ -51,50 +56,44 @@ export default function Home() {
   const [walkView, setWalkView] = useState<ViewType>('daily');
 
   const { data: pushups = [], refetch } = useQuery<PushupEntry[]>({
-    queryKey: ["pushups"],
-    queryFn: async () => {
-      const response = await fetch("/api/pushups");
-      if (!response.ok) {
-        throw new Error("Failed to fetch pushups");
-      }
-      const data = await response.json();
-      return data;
-    }
+    queryKey: ["/api/pushups"],
   });
 
   const { data: walks = [], refetch: refetchWalks } = useQuery<WalkEntry[]>({
-    queryKey: ["walks"],
-    queryFn: async () => {
-      const response = await fetch("/api/walks");
-      if (!response.ok) {
-        throw new Error("Failed to fetch walks");
-      }
-      return response.json();
-    }
+    queryKey: ["/api/walks"],
   });
 
   const addEntry = useMutation({
     mutationFn: async (data: PushupFormData) => {
-      const res = await fetch("/api/pushups", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) throw new Error("Failed to add entry");
+      const res = await apiRequest("POST", "/api/pushups", data);
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       refetch();
       toast({ title: "Success!", description: "Pushup entry added" });
+
+      // Reset form immediately
       form.reset({
-        count: undefined as unknown as number,
+        count: '' as unknown as number,
         date: format(new Date(), "yyyy-MM-dd"),
       });
+
+      // Sync to HealthKit in background (don't await)
+      if (Capacitor.getPlatform() === 'ios') {
+        healthKitService.getAutoSyncEnabled().then(autoSyncEnabled => {
+          if (autoSyncEnabled) {
+            const entryDate = variables.date ? new Date(variables.date) : new Date();
+            healthKitService.writePushupWorkout(variables.count, entryDate)
+              .then(() => toast({ title: "Synced to Apple Health", description: `${variables.count} pushups logged` }))
+              .catch(() => {}); // Silently fail
+          }
+        }).catch(() => {});
+      }
     },
     onError: (error) => {
       console.error("Error:", error);
-      toast({ 
-        title: "Error", 
+      toast({
+        title: "Error",
         description: "Failed to add pushup entry",
         variant: "destructive"
       });
@@ -103,26 +102,35 @@ export default function Home() {
 
   const addWalkEntry = useMutation({
     mutationFn: async (data: WalkFormData) => {
-      const res = await fetch("/api/walks", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) throw new Error("Failed to add walk");
+      const res = await apiRequest("POST", "/api/walks", data);
       return res.json();
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       refetchWalks();
       toast({ title: "Success!", description: "Walk entry added" });
+
+      // Reset form immediately
       walkForm.reset({
-        miles: undefined as unknown as number,
+        miles: '' as unknown as number,
         date: format(new Date(), "yyyy-MM-dd"),
       });
+
+      // Sync to HealthKit in background (don't await)
+      if (Capacitor.getPlatform() === 'ios') {
+        healthKitService.getAutoSyncEnabled().then(autoSyncEnabled => {
+          if (autoSyncEnabled) {
+            const entryDate = variables.date ? new Date(variables.date) : new Date();
+            healthKitService.writeWalkingDistance(variables.miles, entryDate)
+              .then(() => toast({ title: "Synced to Apple Health", description: `${variables.miles} miles logged` }))
+              .catch(() => {}); // Silently fail
+          }
+        }).catch(() => {});
+      }
     },
     onError: (error) => {
       console.error("Error:", error);
-      toast({ 
-        title: "Error", 
+      toast({
+        title: "Error",
         description: "Failed to add walk entry",
         variant: "destructive"
       });
@@ -254,15 +262,15 @@ export default function Home() {
   }, [walks, walkView]);
 
   return (
-    <div className="min-h-screen bg-gray-50/50">
-      <div className="relative h-[45vh] sm:h-[50vh] w-full mb-12 overflow-hidden bg-gradient-to-br from-blue-600 to-cyan-500">
+    <div className="fixed inset-0 bg-gray-50/50 overflow-y-scroll" style={{ WebkitOverflowScrolling: 'touch' }}>
+      <div className="relative h-[50vh] sm:h-[50vh] w-full mb-12 overflow-hidden bg-gradient-to-br from-blue-600 to-cyan-500">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(255,255,255,0.1),transparent_60%)]"></div>
         <div className="absolute right-0 top-0 w-1/2 h-full">
           <div className="absolute inset-0 bg-white/10 backdrop-blur-xl rounded-l-full -skew-x-12 translate-x-20"></div>
         </div>
-        <div className="absolute top-4 right-4 z-10">
-          <Button 
-            variant="outline" 
+        <div className="absolute top-4 right-4 z-10" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+          <Button
+            variant="outline"
             size="sm"
             onClick={() => logoutMutation.mutate()}
             disabled={logoutMutation.isPending}
@@ -272,7 +280,7 @@ export default function Home() {
             {user?.username || "Logout"}
           </Button>
         </div>
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-6 w-full max-w-4xl px-4">
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-4 w-full max-w-4xl px-4" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
           <img 
             src="/images/bitmoji.jpeg" 
             alt="Bitmoji Hero"
@@ -332,15 +340,12 @@ export default function Home() {
                   onSubmit={form.handleSubmit(async (data) => {
     const count = parseInt(data.count.toString(), 10);
     if (!isNaN(count) && count > 0) {
-      console.log("Submitting pushup entry:", { count, date: data.date });
       const submission = {
         count,
         date: data.date || format(new Date(), "yyyy-MM-dd")
       };
-      console.log("Submitting:", submission);
       try {
-        const result = await addEntry.mutateAsync(submission);
-        console.log("Server response:", result);
+        await addEntry.mutateAsync(submission);
         await refetch();
         toast({ title: "Success!", description: `Added ${count} pushups` });
         form.reset({
@@ -349,15 +354,15 @@ export default function Home() {
         });
       } catch (error) {
         console.error("Submission error:", error);
-        toast({ 
+        toast({
           title: "Error",
           description: "Failed to add pushups",
           variant: "destructive"
         });
       }
     } else {
-      toast({ 
-        title: "Invalid input", 
+      toast({
+        title: "Invalid input",
         description: "Please enter a number greater than 0",
         variant: "destructive"
       });
@@ -536,6 +541,11 @@ export default function Home() {
           <div className="md:col-span-2">
             <FormCheck />
           </div>
+
+          {/* HealthKit Settings - only shows on iOS */}
+          <div className="md:col-span-2">
+            <HealthKitSettings />
+          </div>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 mt-6 lg:mt-8">
@@ -579,12 +589,12 @@ export default function Home() {
                     <XAxis dataKey="date" />
                     <YAxis />
                     <Tooltip />
-                    <Line 
-                      type="monotone" 
-                      dataKey="count" 
-                      stroke="hsl(var(--primary))" 
+                    <Line
+                      type="monotone"
+                      dataKey="count"
+                      stroke="#3b82f6"
                       strokeWidth={2}
-                      dot={{ fill: "hsl(var(--primary))" }}
+                      dot={{ fill: "#3b82f6" }}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -644,6 +654,24 @@ export default function Home() {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Entry History */}
+        <div className="grid gap-6 md:grid-cols-2 mt-6 lg:mt-8">
+          <EntryList
+            title="Pushup History"
+            icon={<List className="h-5 w-5" />}
+            entries={pushups}
+            type="pushups"
+            onDelete={() => refetch()}
+          />
+          <EntryList
+            title="Walk History"
+            icon={<List className="h-5 w-5" />}
+            entries={walks}
+            type="walks"
+            onDelete={() => refetchWalks()}
+          />
         </div>
       </div>
     </div>

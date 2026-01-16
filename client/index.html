@@ -2,7 +2,31 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>Bole Fitness</title>
+    <style>
+      /* iOS safe area support */
+      :root {
+        --sat: env(safe-area-inset-top);
+        --sab: env(safe-area-inset-bottom);
+        --sal: env(safe-area-inset-left);
+        --sar: env(safe-area-inset-right);
+      }
+      html {
+        height: 100%;
+      }
+      body {
+        min-height: 100%;
+        overflow-y: auto;
+        overflow-x: hidden;
+        -webkit-overflow-scrolling: touch;
+      }
+      #root {
+        min-height: 100%;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
