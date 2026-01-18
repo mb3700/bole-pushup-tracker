@@ -155,16 +155,34 @@ export default function Home() {
     if (!pushups?.length) return [0, 0];
 
     const total = pushups.reduce((acc, entry) => acc + entry.count, 0);
-    const days = new Set(pushups.map((entry) => format(parseLocalDate(entry.date), "yyyy-MM-dd"))).size;
-    return [total, Math.round(total / Math.max(days, 1))];
+
+    // Calculate days from first entry to today (including days with no activity)
+    const dates = pushups.map(entry => parseLocalDate(entry.date).getTime());
+    const firstDate = new Date(Math.min(...dates));
+    const today = new Date();
+    // Set both to start of day for accurate day count
+    firstDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    const daysSinceStart = Math.floor((today.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
+    return [total, Math.round(total / daysSinceStart)];
   }, [pushups]);
 
   const [totalMiles, dailyMilesAverage] = useMemo(() => {
     if (!walks?.length) return [0, 0];
 
     const total = walks.reduce((acc, entry) => acc + entry.miles, 0);
-    const days = new Set(walks.map((entry) => format(parseLocalDate(entry.date), "yyyy-MM-dd"))).size;
-    return [total.toFixed(1), (total / Math.max(days, 1)).toFixed(1)];
+
+    // Calculate days from first entry to today (including days with no activity)
+    const dates = walks.map(entry => parseLocalDate(entry.date).getTime());
+    const firstDate = new Date(Math.min(...dates));
+    const today = new Date();
+    // Set both to start of day for accurate day count
+    firstDate.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);
+    const daysSinceStart = Math.floor((today.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
+    return [total.toFixed(1), (total / daysSinceStart).toFixed(1)];
   }, [walks]);
 
   const chartData = useMemo(() => {
